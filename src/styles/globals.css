@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply text-text bg-background;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-sans antialiased m-0 min-h-screen;
+  }
+  h1 {
+    @apply text-2xl font-bold mb-4;
+  }
+  h2 {
+    @apply text-xl font-semibold mb-3;
+  }
+  h3 {
+    @apply text-lg font-semibold mb-2;
+  }
+  p {
+    @apply mb-4;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-button inline-block transition-all duration-200 font-medium;
+  }
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-opacity-90 active:bg-opacity-100;
+  }
+  .btn-secondary {
+    @apply bg-secondary text-text hover:bg-opacity-90 active:bg-opacity-100;
+  }
+  .card {
+    @apply bg-white p-4 rounded-card shadow-md;
+  }
+  .badge {
+    @apply inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded-full;
+  }
+  .badge-primary {
+    @apply bg-primary bg-opacity-10 text-primary;
+  }
+  .badge-secondary {
+    @apply bg-secondary bg-opacity-10 text-text;
+  }
+  .form-input {
+    @apply w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+  }
+  .container-app {
+    @apply max-w-screen-lg mx-auto px-4;
+  }
+} 
