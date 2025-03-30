@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
 // 导入布局组件
@@ -57,31 +57,33 @@ function App() {
   }
 
   return (
-    <UserProvider>
-      <TrainingProvider>
-        <RewardProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            
-            <Route path="/" element={
-              <PrivateRoute>
-                <Layout />
-              </PrivateRoute>
-            }>
-              <Route index element={<HomePage />} />
-              <Route path="training" element={<TrainingSelectPage />} />
-              <Route path="training/:id" element={<TrainingPage />} />
-              <Route path="progress" element={<ProgressPage />} />
-              <Route path="rewards" element={<RewardsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Route>
-            
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </RewardProvider>
-      </TrainingProvider>
-    </UserProvider>
+    <BrowserRouter>
+      <UserProvider>
+        <TrainingProvider>
+          <RewardProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              
+              <Route path="/" element={
+                <PrivateRoute>
+                  <Layout />
+                </PrivateRoute>
+              }>
+                <Route index element={<HomePage />} />
+                <Route path="training" element={<TrainingSelectPage />} />
+                <Route path="training/:id" element={<TrainingPage />} />
+                <Route path="progress" element={<ProgressPage />} />
+                <Route path="rewards" element={<RewardsPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+              
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </RewardProvider>
+        </TrainingProvider>
+      </UserProvider>
+    </BrowserRouter>
   )
 }
 

@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTraining } from '../contexts/TrainingContext';
-import { dribblingTrainings } from '../data/trainingData';
+
+// 导入所有训练数据
+import dribblingTrainings from '../data/training/dribbling';
+import shootingTrainings from '../data/training/shooting';
+import passingTrainings from '../data/training/passing';
+import movementTrainings from '../data/training/movement';
+import parentChildTrainings from '../data/training/parentchild';
 
 const TrainingPage = () => {
   const { id } = useParams();
@@ -21,14 +27,22 @@ const TrainingPage = () => {
   useEffect(() => {
     setIsLoading(true);
     
-    // 这里简化处理，只从dribblingTrainings中查找
-    // 实际项目中应该查询所有类别
-    const foundTraining = dribblingTrainings.find(t => t.id === id);
+    // 合并所有训练数据
+    const allTrainings = [
+      ...dribblingTrainings,
+      ...shootingTrainings,
+      ...passingTrainings,
+      ...movementTrainings,
+      ...parentChildTrainings
+    ];
+    
+    // 根据ID查找训练
+    const foundTraining = allTrainings.find(t => t.moduleId === id);
     
     if (foundTraining) {
       setTraining(foundTraining);
     } else {
-      // 如果没找到，可以重定向到训练列表页
+      // 如果没找到，重定向到训练列表页
       navigate('/training');
     }
     
@@ -38,7 +52,9 @@ const TrainingPage = () => {
   // 开始训练
   const handleStartTraining = () => {
     try {
-      startTraining(id);
+      // 由于Context中的startTraining函数仍使用旧的数据结构，
+      // 这里暂时采用本地状态管理训练
+      //startTraining(id);
       setIsTrainingActive(true);
       setCurrentStep(0);
     } catch (error) {
@@ -59,10 +75,15 @@ const TrainingPage = () => {
   // 完成训练
   const handleCompleteTraining = () => {
     try {
-      const result = completeTraining(score, feedback);
+      // 由于Context中的completeTraining函数仍使用旧的数据结构，
+      // 这里暂时采用本地状态管理
+      //const result = completeTraining(score, feedback);
+      
+      // 根据得分计算星星数
+      const earnedStarsCount = Math.max(1, Math.floor(score));
       
       // 设置获得的星星数，用于显示
-      setEarnedStars(result.earnedStars);
+      setEarnedStars(earnedStarsCount);
       
       // 重置训练状态
       setIsTrainingActive(false);
@@ -101,6 +122,19 @@ const TrainingPage = () => {
     );
   };
   
+  // 获取训练分类的中文名称
+  const getCategoryName = (category) => {
+    const categoryMap = {
+      'dribbling': '运球',
+      'shooting': '投篮',
+      'passing': '传球',
+      'movement': '移动',
+      'parent_child': '父子训练'
+    };
+    
+    return categoryMap[category] || '基础训练';
+  };
+  
   if (isLoading || !training) {
     return (
       <div className="flex justify-center items-center p-10">
@@ -113,6 +147,7 @@ const TrainingPage = () => {
   }
   
   const currentStepData = isTrainingActive ? training.steps[currentStep] : null;
+  const tips = training.tips || training.keyPoints || [];
   
   return (
     <div className="space-y-6">
@@ -130,16 +165,11 @@ const TrainingPage = () => {
           
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="text-xs bg-primary bg-opacity-10 text-primary rounded-full px-3 py-1">
-              {training.category === 'dribbling' ? '运球' : 
-                training.category === 'shooting' ? '投篮' : 
-                training.category === 'passing' ? '传球' : 
-                training.category === 'movement' ? '移动' : '基础'}
+              {getCategoryName(training.category)}
             </span>
             
             <span className="text-xs bg-gray-100 text-gray-700 rounded-full px-3 py-1">
-              {training.level === 1 ? '初级' : 
-                training.level === 2 ? '中级' : 
-                training.level === 3 ? '高级' : '基础'}
+              {training.level}
             </span>
             
             <span className="text-xs bg-gray-100 text-gray-700 rounded-full px-3 py-1">
@@ -167,7 +197,7 @@ const TrainingPage = () => {
           <div className="mb-6">
             <h2 className="font-semibold mb-2">训练技巧</h2>
             <ul className="space-y-1 list-disc list-inside text-sm text-gray-700">
-              {training.tips.map((tip, index) => (
+              {tips.map((tip, index) => (
                 <li key={index}>{tip}</li>
               ))}
             </ul>
@@ -178,7 +208,9 @@ const TrainingPage = () => {
             <div className="flex items-center space-x-3">
               <div className="flex items-center">
                 <span className="text-yellow-500 mr-1">⭐</span>
-                <span className="font-medium">{training.rewards.stars} 颗星星</span>
+                <span className="font-medium">
+                  {training.rewards ? training.rewards.stars : 3} 颗星星
+                </span>
               </div>
             </div>
           </div>
@@ -293,4 +325,4 @@ const TrainingPage = () => {
   );
 };
 
-export default TrainingPage; 
+export default TrainingPage;

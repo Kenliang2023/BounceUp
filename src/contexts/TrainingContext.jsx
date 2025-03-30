@@ -1,6 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
-import { dribblingTrainings } from '../data/trainingData';
+
+// 导入所有训练数据
+import dribblingTrainings from '../data/training/dribbling';
+import shootingTrainings from '../data/training/shooting';
+import passingTrainings from '../data/training/passing';
+import movementTrainings from '../data/training/movement';
+import parentChildTrainings from '../data/training/parentchild';
 
 // 创建上下文
 const TrainingContext = createContext(null);
@@ -10,7 +16,8 @@ const defaultSkillProgress = {
   dribbling: 0,
   shooting: 0,
   passing: 0,
-  movement: 0
+  movement: 0,
+  parent_child: 0
 };
 
 // 提供者组件
@@ -19,6 +26,15 @@ export const TrainingProvider = ({ children }) => {
   const [skillProgress, setSkillProgress] = useState(defaultSkillProgress);
   const [trainingHistory, setTrainingHistory] = useState([]);
   const [currentTraining, setCurrentTraining] = useState(null);
+  
+  // 合并所有训练数据
+  const allTrainings = [
+    ...dribblingTrainings,
+    ...shootingTrainings,
+    ...passingTrainings,
+    ...movementTrainings,
+    ...parentChildTrainings
+  ];
   
   // 首次加载时从localStorage获取训练数据
   useEffect(() => {
@@ -54,7 +70,7 @@ export const TrainingProvider = ({ children }) => {
   // 开始训练
   const startTraining = (trainingId) => {
     // 查找训练数据
-    const training = dribblingTrainings.find(t => t.id === trainingId);
+    const training = allTrainings.find(t => t.moduleId === trainingId);
     
     if (!training) {
       throw new Error('训练不存在');
@@ -97,7 +113,7 @@ export const TrainingProvider = ({ children }) => {
     // 创建训练记录
     const trainingRecord = {
       recordId: `record_${Date.now()}`,
-      trainingId: currentTraining.id,
+      trainingId: currentTraining.moduleId,
       title: currentTraining.title,
       category: currentTraining.category,
       level: currentTraining.level,
@@ -164,30 +180,64 @@ export const TrainingProvider = ({ children }) => {
   
   // 获取推荐训练
   const getRecommendedTrainings = (count = 3) => {
-    // 示例逻辑：根据用户进度，推荐适合的训练
-    // 完整版本中，可以根据用户的技能等级和训练历史进行更复杂的推荐
-    
+    // 根据用户进度，推荐适合的训练
     const recommendations = [];
     
-    // 首先检查运球技能
-    const dribblingProgress = skillProgress.dribbling || 0;
-    let recommendedLevel;
+    // 获取用户最弱的两个技能
+    const skillEntries = Object.entries(skillProgress);
+    const sortedSkills = skillEntries.sort((a, b) => a[1] - b[1]);
+    const weakestSkills = sortedSkills.slice(0, 2).map(entry => entry[0]);
     
-    if (dribblingProgress < 30) {
-      recommendedLevel = 1; // 初级
-    } else if (dribblingProgress < 60) {
-      recommendedLevel = 2; // 中级
-    } else {
-      recommendedLevel = 3; // 高级
+    // 为每个较弱的技能找到合适级别的训练
+    for (const skill of weakestSkills) {
+      const progress = skillProgress[skill] || 0;
+      let recommendedLevel;
+      
+      if (progress < 30) {
+        recommendedLevel = '基础';
+      } else if (progress < 60) {
+        recommendedLevel = '中级';
+      } else {
+        recommendedLevel = '高级';
+      }
+      
+      // 根据技能找到对应的训练数据
+      let skillTrainings = [];
+      if (skill === 'dribbling') {
+        skillTrainings = [...dribblingTrainings, ...parentChildTrainings.filter(t => t.category === 'dribbling')];
+      } else if (skill === 'shooting') {
+        skillTrainings = [...shootingTrainings, ...parentChildTrainings.filter(t => t.category === 'shooting')];
+      } else if (skill === 'passing') {
+        skillTrainings = passingTrainings;
+      } else if (skill === 'movement') {
+        skillTrainings = movementTrainings;
+      } else if (skill === 'parent_child') {
+        skillTrainings = parentChildTrainings;
+      }
+      
+      // 从训练数据中筛选推荐的训练
+      const matchingTrainings = skillTrainings.filter(
+        t => t.level === recommendedLevel
+      );
+      
+      // 添加到推荐列表
+      if (matchingTrainings.length > 0) {
+        recommendations.push(...matchingTrainings);
+      }
     }
     
-    // 从训练数据中筛选推荐的训练
-    const matchingTrainings = dribblingTrainings.filter(
-      t => t.level === recommendedLevel
-    );
+    // 如果推荐数量不足，添加一些父子训练
+    if (recommendations.length < count) {
+      const missingCount = count - recommendations.length;
+      const parentChildRecs = parentChildTrainings
+        .filter(t => !recommendations.includes(t))
+        .slice(0, missingCount);
+      
+      recommendations.push(...parentChildRecs);
+    }
     
     // 随机选择推荐数量的训练，或所有匹配的训练
-    const shuffled = [...matchingTrainings].sort(() => 0.5 - Math.random());
+    const shuffled = [...recommendations].sort(() => 0.5 - Math.random());
     
     return shuffled.slice(0, count);
   };
@@ -218,4 +268,4 @@ export const useTraining = () => {
     throw new Error('useTraining must be used within a TrainingProvider');
   }
   return context;
-}; 
+};
