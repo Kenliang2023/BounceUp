@@ -10,7 +10,7 @@ import {
   parentChildTrainings,
   findTrainingById,
   getAllTrainings
-} from '../data/training';
+} from '../data/training/index.js';
 
 // 创建上下文
 const TrainingContext = createContext(null);
@@ -51,6 +51,14 @@ export const TrainingProvider = ({ children }) => {
         console.error('Failed to parse training history:', error);
       }
     }
+
+    // 调试信息，检查所有训练数据
+    console.log("Training Context Initialized");
+    console.log("Dribbling trainings:", dribblingTrainings?.length || 0);
+    console.log("Shooting trainings:", shootingTrainings?.length || 0);
+    console.log("Passing trainings:", passingTrainings?.length || 0);
+    console.log("Movement trainings:", movementTrainings?.length || 0);
+    console.log("Parent-Child trainings:", parentChildTrainings?.length || 0);
   }, []);
   
   // 当训练数据变化时保存到localStorage
@@ -186,7 +194,7 @@ export const TrainingProvider = ({ children }) => {
     // 为每个较弱的技能找到合适级别的训练
     for (const skill of weakestSkills) {
       const progress = skillProgress[skill] || 0;
-      let recommendedLevel;
+      let recommendedLevel = '基础';
       
       if (progress < 30) {
         recommendedLevel = '基础';
@@ -195,25 +203,36 @@ export const TrainingProvider = ({ children }) => {
       } else {
         recommendedLevel = '高级';
       }
-      
-      // 根据技能找到对应的训练数据
+
+      // 根据技能类别获取对应训练
       let skillTrainings = [];
-      if (skill === 'dribbling') {
-        skillTrainings = [...dribblingTrainings, ...parentChildTrainings.filter(t => t.category === 'dribbling')];
-      } else if (skill === 'shooting') {
-        skillTrainings = [...shootingTrainings, ...parentChildTrainings.filter(t => t.category === 'shooting')];
-      } else if (skill === 'passing') {
-        skillTrainings = passingTrainings;
-      } else if (skill === 'movement') {
-        skillTrainings = movementTrainings;
-      } else if (skill === 'parent_child') {
-        skillTrainings = parentChildTrainings;
+      switch(skill) {
+        case 'dribbling':
+          skillTrainings = dribblingTrainings || [];
+          break;
+        case 'shooting':
+          skillTrainings = shootingTrainings || [];
+          break;
+        case 'passing':
+          skillTrainings = passingTrainings || [];
+          break;
+        case 'movement':
+          skillTrainings = movementTrainings || [];
+          break;
+        default:
+          skillTrainings = [];
+      }
+      
+      // 父子训练可以作为基础训练推荐
+      if (recommendedLevel === '基础' && parentChildTrainings && parentChildTrainings.length > 0) {
+        const relevantParentChildTrainings = parentChildTrainings.filter(t => 
+          t.category === skill
+        );
+        skillTrainings = [...skillTrainings, ...relevantParentChildTrainings];
       }
       
       // 从训练数据中筛选推荐的训练
-      const matchingTrainings = skillTrainings.filter(
-        t => t.level === recommendedLevel
-      );
+      const matchingTrainings = skillTrainings.filter(t => t.level === recommendedLevel);
       
       // 添加到推荐列表
       if (matchingTrainings.length > 0) {
@@ -221,14 +240,24 @@ export const TrainingProvider = ({ children }) => {
       }
     }
     
-    // 如果推荐数量不足，添加一些父子训练
-    if (recommendations.length < count) {
+    // 如果推荐数量不足，添加父子训练
+    if (recommendations.length < count && parentChildTrainings && parentChildTrainings.length > 0) {
       const missingCount = count - recommendations.length;
       const parentChildRecs = parentChildTrainings
-        .filter(t => !recommendations.includes(t))
+        .filter(t => !recommendations.some(r => r.moduleId === t.moduleId))
         .slice(0, missingCount);
       
       recommendations.push(...parentChildRecs);
+    }
+    
+    // 如果还是不足，添加任意训练
+    if (recommendations.length < count) {
+      const allTrainings = getAllTrainings();
+      const remainingTrainings = allTrainings
+        .filter(t => !recommendations.some(r => r.moduleId === t.moduleId))
+        .slice(0, count - recommendations.length);
+      
+      recommendations.push(...remainingTrainings);
     }
     
     // 随机选择推荐数量的训练，或所有匹配的训练

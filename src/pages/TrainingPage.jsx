@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTraining } from '../contexts/TrainingContext';
-import { findTrainingById } from '../data/training';
+import { findTrainingById } from '../data/training/index.js';
 
 const TrainingPage = () => {
   const { id } = useParams();
@@ -16,22 +16,33 @@ const TrainingPage = () => {
   const [feedback, setFeedback] = useState('');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [earnedStars, setEarnedStars] = useState(0);
+  const [error, setError] = useState(null);
   
   // 获取训练数据
   useEffect(() => {
     setIsLoading(true);
     
-    // 使用统一的查找方法获取训练
-    const foundTraining = findTrainingById(id);
-    
-    if (foundTraining) {
-      setTraining(foundTraining);
-    } else {
-      // 如果没找到，重定向到训练列表页
-      navigate('/training');
+    try {
+      // 使用统一的查找方法获取训练
+      const foundTraining = findTrainingById(id);
+      console.log("Training search result for ID:", id, foundTraining ? "Found" : "Not found");
+      
+      if (foundTraining) {
+        setTraining(foundTraining);
+      } else {
+        // 如果没找到，重定向到训练列表页
+        console.error(`Training with ID ${id} not found`);
+        setError(`未找到ID为${id}的训练`);
+        setTimeout(() => {
+          navigate('/training');
+        }, 3000);
+      }
+    } catch (err) {
+      console.error("Error finding training:", err);
+      setError(`加载训练时出错: ${err.message}`);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   }, [id, navigate]);
   
   // 开始训练
@@ -44,6 +55,7 @@ const TrainingPage = () => {
       setCurrentStep(0);
     } catch (error) {
       console.error('开始训练失败:', error);
+      setError(`开始训练失败: ${error.message}`);
     }
   };
   
@@ -81,6 +93,7 @@ const TrainingPage = () => {
       }, 3000);
     } catch (error) {
       console.error('完成训练失败:', error);
+      setError(`完成训练失败: ${error.message}`);
     }
   };
   
@@ -120,12 +133,38 @@ const TrainingPage = () => {
     return categoryMap[category] || '基础训练';
   };
   
-  if (isLoading || !training) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center p-10">
         <div className="text-center">
           <div className="loading-spinner mb-4"></div>
           <p>加载训练内容...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="flex justify-center items-center p-10">
+        <div className="text-center">
+          <div className="text-3xl mb-4">⚠️</div>
+          <p className="text-red-500 font-bold">{error}</p>
+          <p className="mt-4">正在返回训练选择页面...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!training) {
+    return (
+      <div className="flex justify-center items-center p-10">
+        <div className="text-center">
+          <div className="text-3xl mb-4">😕</div>
+          <p>未找到训练内容</p>
+          <Link to="/training" className="btn btn-primary mt-4">
+            返回训练选择
+          </Link>
         </div>
       </div>
     );
