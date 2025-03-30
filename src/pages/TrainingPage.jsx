@@ -1,13 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTraining } from '../contexts/TrainingContext';
-
-// 导入所有训练数据
-import dribblingTrainings from '../data/training/dribbling';
-import shootingTrainings from '../data/training/shooting';
-import passingTrainings from '../data/training/passing';
-import movementTrainings from '../data/training/movement';
-import parentChildTrainings from '../data/training/parentchild';
+import { findTrainingById } from '../data/training';
 
 const TrainingPage = () => {
   const { id } = useParams();
@@ -27,17 +21,8 @@ const TrainingPage = () => {
   useEffect(() => {
     setIsLoading(true);
     
-    // 合并所有训练数据
-    const allTrainings = [
-      ...dribblingTrainings,
-      ...shootingTrainings,
-      ...passingTrainings,
-      ...movementTrainings,
-      ...parentChildTrainings
-    ];
-    
-    // 根据ID查找训练
-    const foundTraining = allTrainings.find(t => t.moduleId === id);
+    // 使用统一的查找方法获取训练
+    const foundTraining = findTrainingById(id);
     
     if (foundTraining) {
       setTraining(foundTraining);

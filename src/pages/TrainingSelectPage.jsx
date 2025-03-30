@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
-import dribblingTrainings from '../data/training/dribbling';
-import shootingTrainings from '../data/training/shooting';
-import passingTrainings from '../data/training/passing';
-import movementTrainings from '../data/training/movement';
-import parentChildTrainings from '../data/training/parentchild';
+import { 
+  dribblingTrainings, 
+  shootingTrainings, 
+  passingTrainings, 
+  movementTrainings,
+  parentChildTrainings 
+} from '../data/training';
 
 const TrainingSelectPage = () => {
-  // 将新的父子训练数据添加到相应类别中
+  // 将父子训练数据添加到相应类别中
   const allDribblingTrainings = [
     ...dribblingTrainings,
     ...parentChildTrainings.filter(t => t.category === 'dribbling')
@@ -16,7 +18,7 @@ const TrainingSelectPage = () => {
     ...shootingTrainings,
     ...parentChildTrainings.filter(t => t.category === 'shooting')
   ];
-  
+
   const categories = [
     { id: 'dribbling', name: '运球', emoji: '🏀', color: 'bg-blue-100', data: allDribblingTrainings },
     { id: 'shooting', name: '投篮', emoji: '🎯', color: 'bg-red-100', data: allShootingTrainings },

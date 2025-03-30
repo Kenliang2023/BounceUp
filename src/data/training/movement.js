@@ -5,47 +5,48 @@ const movementTrainings = [
     category: 'movement',
     title: '篮球基本脚步',
     level: '基础',
-    duration: 7,
-    equipment: ['标记物', '计时器'],
-    setup: '场地：平坦场地，可设置标记点',
-    description: '学习篮球中的基本移动方式和脚步，提高移动灵活性和防守能力。',
+    duration: 10,
+    equipment: ['标准篮球', '计时器', '标记物（如锥桶）'],
+    setup: '平坦场地，可设置简单路径',
+    description: '学习篮球中的基本移动方式和脚步，提高移动灵活性和速度。',
     steps: [
-      '练习防守基本姿势，膝盖弯曲，重心下沉',
-      '进行侧身滑步练习，保持重心稳定',
-      '练习前后移动，快速变换方向',
-      '结合侧身和前后移动进行组合练习',
-      '设置标记点进行移动路线训练'
-    ],
-    keyPoints: [
-      '保持重心低，膝盖弯曲',
-      '步伐小而快，不要交叉脚',
-      '身体重心放在前脚掌',
-      '眼睛保持平视前方'
-    ],
-    commonErrors: [
       {
-        error: '重心过高，易失去平衡',
-        correction: '提醒"膝盖弯曲，降低重心"'
+        id: 'step1',
+        title: '防守姿势',
+        description: '学习基本的防守站姿和移动准备',
+        duration: 2,
+        videoUrl: '/assets/videos/movement_1_1.mp4'
       },
       {
-        error: '移动时重心不稳',
-        correction: '练习"核心绷紧，脚步平稳"'
-      }
-    ],
-    metrics: [
+        id: 'step2',
+        title: '侧身滑步',
+        description: '练习防守中的侧身滑步移动',
+        duration: 4,
+        videoUrl: '/assets/videos/movement_1_2.mp4'
+      },
       {
-        name: '移动灵活性',
-        basic: '能保持基本姿势完成简单移动',
-        intermediate: '移动速度加快，方向变换流畅',
-        advanced: '快速移动中保持身体平衡和防守姿势'
+        id: 'step3',
+        title: '前后移动',
+        description: '学习篮球中的前后快速移动技巧',
+        duration: 4,
+        videoUrl: '/assets/videos/movement_1_3.mp4'
       }
     ],
-    imageUrls: {
-      thumbnail: '/assets/images/movement/basic_footwork_thumb.png',
-      steps: [
-        '/assets/images/movement/basic_footwork_step1.png',
-        '/assets/images/movement/basic_footwork_step2.png'
-      ]
+    keyPoints: [
+      '保持膝盖弯曲，重心下沉',
+      '移动时保持身体平衡',
+      '小步快速移动比大步更有效',
+      '眼睛始终注视前方'
+    ],
+    tips: [
+      '训练前做足热身，尤其是腿部和脚踝',
+      '分解动作，从慢到快逐渐提高速度',
+      '注意正确姿势，防止运动伤害',
+      '短时间、高质量的训练比长时间低效率训练更有效'
+    ],
+    rewards: {
+      stars: 3,
+      experience: 15
     }
   },
   {
@@ -53,97 +54,50 @@ const movementTrainings = [
     category: 'movement',
     title: '起跳与落地技巧',
     level: '基础',
-    duration: 8,
-    equipment: ['标准篮球', '标记物'],
-    setup: '场地：平坦场地，最好有软垫',
-    description: '学习安全有效的起跳和落地技巧，减少伤病风险，提高跳跃效率。',
+    duration: 12,
+    equipment: ['标准篮球', '计时器', '软垫（可选）'],
+    setup: '平坦柔软的场地，避免硬质地面',
+    description: '学习篮球中安全高效的起跳和落地技巧，减少受伤风险。',
     steps: [
-      '练习双脚起跳的基本技巧',
-      '学习单脚起跳动作和平衡',
-      '练习安全的落地缓冲姿势',
-      '进行连续跳跃练习，强调落地后立即起跳',
-      '结合篮球进行跳跃中控球练习'
-    ],
-    keyPoints: [
-      '起跳前下蹲蓄力，膝盖弯曲',
-      '手臂摆动配合增加跳跃高度',
-      '落地时脚掌全面着地，膝盖弯曲缓冲',
-      '保持核心稳定，避免落地不稳'
-    ],
-    commonErrors: [
       {
-        error: '落地时膝盖伸直',
-        correction: '强调"落地时膝盖弯曲吸收冲击"'
+        id: 'step1',
+        title: '基础垂直起跳',
+        description: '练习双脚平衡垂直起跳技巧',
+        duration: 4,
+        videoUrl: '/assets/videos/movement_2_1.mp4'
       },
       {
-        error: '落地姿势不稳定',
-        correction: '练习"控制落点，保持平衡"'
-      }
-    ],
-    metrics: [
-      {
-        name: '跳跃质量',
-        basic: '能完成基本跳跃动作，落地稳定',
-        intermediate: '连续跳跃流畅，起落协调',
-        advanced: '各种跳跃方式转换自如，保持良好控制'
-      }
-    ],
-    imageUrls: {
-      thumbnail: '/assets/images/movement/jump_landing_thumb.png',
-      steps: [
-        '/assets/images/movement/jump_landing_step1.png',
-        '/assets/images/movement/jump_landing_step2.png'
-      ]
-    }
-  },
-  {
-    moduleId: 'movement_3',
-    category: 'movement',
-    title: '快速启动与急停',
-    level: '中级',
-    duration: 10,
-    equipment: ['标准篮球', '标记物', '计时器'],
-    setup: '场地：篮球场，设置起点和终点',
-    description: '提升篮球中的启动加速和急停技巧，提高控制能力和比赛中的移动效率。',
-    steps: [
-      '练习爆发力启动技巧，从静止到全速',
-      '学习不同急停方式：跳步急停和跨步急停',
-      '练习启动-急停-启动的连续变速动作',
-      '进行变向急停后投篮或传球练习',
-      '设置路线进行全场启停训练'
-    ],
-    keyPoints: [
-      '启动时身体前倾，重心转移',
-      '急停时降低重心，脚步有力',
-      '保持身体平衡，随时准备下一动作',
-      '使用手臂配合增加启动速度'
-    ],
-    commonErrors: [
-      {
-        error: '急停时失去平衡',
-        correction: '练习"控制速度，降低重心"'
+        id: 'step2',
+        title: '单脚起跳',
+        description: '学习单脚起跳的技巧和平衡',
+        duration: 4,
+        videoUrl: '/assets/videos/movement_2_2.mp4'
       },
       {
-        error: '启动不够爆发',
-        correction: '强调"第一步要果断，身体前倾"'
+        id: 'step3',
+        title: '安全落地',
+        description: '练习跳跃后的安全落地姿势',
+        duration: 4,
+        videoUrl: '/assets/videos/movement_2_3.mp4'
       }
     ],
-    metrics: [
-      {
-        name: '启停控制能力',
-        basic: '能基本完成启动和急停动作',
-        intermediate: '启停流畅，保持良好平衡',
-        advanced: '高速启停自如，随时可进行下一动作'
-      }
+    keyPoints: [
+      '起跳前先下蹲蓄力',
+      '落地时膝盖微屈缓冲冲击',
+      '保持身体平衡和控制',
+      '双脚起跳更稳定，单脚起跳更快速'
     ],
-    imageUrls: {
-      thumbnail: '/assets/images/movement/start_stop_thumb.png',
-      steps: [
-        '/assets/images/movement/start_stop_step1.png',
-        '/assets/images/movement/start_stop_step2.png'
-      ]
+    tips: [
+      '训练前做足热身，保护膝盖和脚踝',
+      '逐步增加跳跃高度，不要操之过急',
+      '关注落地缓冲，这是减少伤害的关键',
+      '训练间注意休息，避免过度疲劳'
+    ],
+    rewards: {
+      stars: 3,
+      experience: 15
     }
   }
 ];
 
-export default movementTrainings; 
+export default movementTrainings;

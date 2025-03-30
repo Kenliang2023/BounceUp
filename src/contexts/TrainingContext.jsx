@@ -2,11 +2,15 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from './UserContext';
 
 // 导入所有训练数据
-import dribblingTrainings from '../data/training/dribbling';
-import shootingTrainings from '../data/training/shooting';
-import passingTrainings from '../data/training/passing';
-import movementTrainings from '../data/training/movement';
-import parentChildTrainings from '../data/training/parentchild';
+import { 
+  dribblingTrainings, 
+  shootingTrainings, 
+  passingTrainings, 
+  movementTrainings,
+  parentChildTrainings,
+  findTrainingById,
+  getAllTrainings
+} from '../data/training';
 
 // 创建上下文
 const TrainingContext = createContext(null);
@@ -26,15 +30,6 @@ export const TrainingProvider = ({ children }) => {
   const [skillProgress, setSkillProgress] = useState(defaultSkillProgress);
   const [trainingHistory, setTrainingHistory] = useState([]);
   const [currentTraining, setCurrentTraining] = useState(null);
-  
-  // 合并所有训练数据
-  const allTrainings = [
-    ...dribblingTrainings,
-    ...shootingTrainings,
-    ...passingTrainings,
-    ...movementTrainings,
-    ...parentChildTrainings
-  ];
   
   // 首次加载时从localStorage获取训练数据
   useEffect(() => {
@@ -70,7 +65,7 @@ export const TrainingProvider = ({ children }) => {
   // 开始训练
   const startTraining = (trainingId) => {
     // 查找训练数据
-    const training = allTrainings.find(t => t.moduleId === trainingId);
+    const training = findTrainingById(trainingId);
     
     if (!training) {
       throw new Error('训练不存在');
