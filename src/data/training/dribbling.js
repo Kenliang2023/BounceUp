@@ -10,12 +10,34 @@ const dribblingTrainings = [
     setup: '场地：任何平坦场地，需标记一个1米直径的圆圈',
     description: '通过原地运球练习提高基础控球能力和手感，是所有运球技巧的基础。',
     steps: [
-      '站在圆圈中央，双脚与肩同宽',
-      '右手运球30秒，保持球的高度在腰部位置',
-      '休息15秒',
-      '左手运球30秒，同样保持在腰部位置',
-      '休息15秒',
-      '双手交替运球30秒（右-左-右-左）'
+      {
+        id: 'step1',
+        title: '准备姿势',
+        description: '站在圆圈中央，双脚与肩同宽',
+        duration: 1,
+        videoUrl: '/assets/videos/dribbling_1_1.mp4'
+      },
+      {
+        id: 'step2',
+        title: '右手运球',
+        description: '右手运球30秒，保持球的高度在腰部位置',
+        duration: 1,
+        videoUrl: '/assets/videos/dribbling_1_2.mp4'
+      },
+      {
+        id: 'step3',
+        title: '左手运球',
+        description: '左手运球30秒，同样保持在腰部位置',
+        duration: 1,
+        videoUrl: '/assets/videos/dribbling_1_3.mp4'
+      },
+      {
+        id: 'step4',
+        title: '双手交替运球',
+        description: '双手交替运球30秒（右-左-右-左）',
+        duration: 2,
+        videoUrl: '/assets/videos/dribbling_1_4.mp4'
+      }
     ],
     keyPoints: [
       '指尖触球，不是整个手掌',
@@ -47,6 +69,10 @@ const dribblingTrainings = [
         '/assets/images/dribbling/stationary_step1.png',
         '/assets/images/dribbling/stationary_step2.png'
       ]
+    },
+    rewards: {
+      stars: 2,
+      experience: 10
     }
   },
   {
@@ -59,12 +85,34 @@ const dribblingTrainings = [
     setup: '场地：平坦场地，两个相距60厘米的标记点',
     description: '通过8字形路线绕过标记点训练，提高手眼协调能力和运球灵活性。',
     steps: [
-      '在地面上放置两个标记点，相距约60厘米',
-      '以8字形路线绕过标记点，右手运球1分钟',
-      '休息20秒',
-      '以8字形路线绕过标记点，左手运球1分钟',
-      '休息20秒',
-      '以8字形路线绕过标记点，交替使用左右手运球1分钟'
+      {
+        id: 'step1',
+        title: '设置标记点',
+        description: '在地面上放置两个标记点，相距约60厘米',
+        duration: 1,
+        videoUrl: '/assets/videos/dribbling_2_1.mp4'
+      },
+      {
+        id: 'step2',
+        title: '右手8字运球',
+        description: '以8字形路线绕过标记点，右手运球1分钟',
+        duration: 2,
+        videoUrl: '/assets/videos/dribbling_2_2.mp4'
+      },
+      {
+        id: 'step3',
+        title: '左手8字运球',
+        description: '以8字形路线绕过标记点，左手运球1分钟',
+        duration: 2,
+        videoUrl: '/assets/videos/dribbling_2_3.mp4'
+      },
+      {
+        id: 'step4',
+        title: '双手交替8字运球',
+        description: '以8字形路线绕过标记点，交替使用左右手运球1分钟',
+        duration: 2,
+        videoUrl: '/assets/videos/dribbling_2_4.mp4'
+      }
     ],
     keyPoints: [
       '保持低重心，膝盖弯曲',
@@ -96,6 +144,10 @@ const dribblingTrainings = [
         '/assets/images/dribbling/figure8_step1.png',
         '/assets/images/dribbling/figure8_step2.png'
       ]
+    },
+    rewards: {
+      stars: 3,
+      experience: 15
     }
   },
   {
@@ -108,14 +160,41 @@ const dribblingTrainings = [
     setup: '场地：平坦场地，可以设置几个障碍物作为变向点',
     description: '学习基本的变向运球技巧，提高控球能力和方向变换速度。',
     steps: [
-      '直线快速运球5米，然后急停并变向',
-      '练习前侧变向（Crossover）10次',
-      '休息20秒',
-      '练习背后变向（Behind the back）10次',
-      '休息20秒',
-      '练习胯下变向（Between the legs）10次',
-      '休息20秒',
-      '结合三种变向技巧自由练习1分钟'
+      {
+        id: 'step1',
+        title: '变向准备',
+        description: '直线快速运球5米，然后急停并变向',
+        duration: 1,
+        videoUrl: '/assets/videos/dribbling_3_1.mp4'
+      },
+      {
+        id: 'step2',
+        title: '前侧变向',
+        description: '练习前侧变向（Crossover）10次',
+        duration: 1.5,
+        videoUrl: '/assets/videos/dribbling_3_2.mp4'
+      },
+      {
+        id: 'step3',
+        title: '背后变向',
+        description: '练习背后变向（Behind the back）10次',
+        duration: 1.5,
+        videoUrl: '/assets/videos/dribbling_3_3.mp4'
+      },
+      {
+        id: 'step4',
+        title: '胯下变向',
+        description: '练习胯下变向（Between the legs）10次',
+        duration: 1,
+        videoUrl: '/assets/videos/dribbling_3_4.mp4'
+      },
+      {
+        id: 'step5',
+        title: '组合变向',
+        description: '结合三种变向技巧自由练习1分钟',
+        duration: 1,
+        videoUrl: '/assets/videos/dribbling_3_5.mp4'
+      }
     ],
     keyPoints: [
       '变向前降低重心',
@@ -147,8 +226,12 @@ const dribblingTrainings = [
         '/assets/images/dribbling/direction_change_step1.png',
         '/assets/images/dribbling/direction_change_step2.png'
       ]
+    },
+    rewards: {
+      stars: 4,
+      experience: 20
     }
   }
 ];
 
-export default dribblingTrainings; 
+export default dribblingTrainings;
