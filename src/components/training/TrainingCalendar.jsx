@@ -9,6 +9,7 @@ const TrainingCalendar = () => {
   
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
+  const [selectedDay, setSelectedDay] = useState(null);
   
   // 生成当月的日历数据
   useEffect(() => {
@@ -97,22 +98,46 @@ const TrainingCalendar = () => {
   
   // 查看某一天的训练
   const viewDayTrainings = (day) => {
-    if (day.trainings.length > 0) {
+    setSelectedDay(day);
+    
+    if (day.trainings.length > 0 && !selectedDay) {
       navigate(`/training-day/${day.trainings[0].id}`);
     }
   };
   
+  // 关闭日期详情
+  const closeDetailView = () => {
+    setSelectedDay(null);
+  };
+  
+  // 点击训练项目
+  const handleTrainingClick = (trainingId) => {
+    navigate(`/training-day/${trainingId}`);
+    closeDetailView();
+  };
+  
+  // 格式化日期
+  const formatDate = (date) => {
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
+  };
+  
   return (
-    <div className="bg-white rounded-lg shadow-sm">
+    <div className="bg-white rounded-lg shadow overflow-hidden">
       {/* 日历头部 */}
-      <div className="flex justify-between items-center p-4 border-b">
+      <div className="flex justify-between items-center p-4 border-b bg-primary bg-opacity-5">
         <h2 className="text-lg font-semibold">
           {currentMonth.toLocaleString('zh-CN', { year: 'numeric', month: 'long' })}
         </h2>
         <div className="flex space-x-2">
           <button 
             onClick={goToPrevMonth}
-            className="p-1 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-full hover:bg-gray-100"
+            aria-label="上个月"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -120,13 +145,15 @@ const TrainingCalendar = () => {
           </button>
           <button 
             onClick={goToToday}
-            className="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
+            className="px-3 py-1 rounded bg-primary text-white text-sm font-medium"
+            aria-label="今天"
           >
             今天
           </button>
           <button 
             onClick={goToNextMonth}
-            className="p-1 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-full hover:bg-gray-100"
+            aria-label="下个月"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -136,57 +163,142 @@ const TrainingCalendar = () => {
       </div>
       
       {/* 星期标题 */}
-      <div className="grid grid-cols-7 border-b">
+      <div className="grid grid-cols-7 bg-gray-50">
         {weekDayNames.map((day, index) => (
           <div 
             key={index}
-            className="text-center py-2 text-sm font-medium text-gray-600"
+            className="text-center py-2 font-medium text-gray-600"
           >
             {day}
           </div>
         ))}
       </div>
       
-      {/* 日历格子 */}
-      <div className="grid grid-cols-7 grid-rows-6">
+      {/* 日历格子 - 减少行距，优化显示效果 */}
+      <div className="grid grid-cols-7 auto-rows-auto">
         {calendarDays.map((day, index) => (
           <div 
             key={index}
-            className={`aspect-auto border-b border-r p-1 min-h-12 ${
-              !day.isCurrentMonth ? 'bg-gray-50 text-gray-400' : 
-              day.isToday ? 'bg-blue-50' : ''
-            }`}
             onClick={() => viewDayTrainings(day)}
+            className={`
+              border-b border-r min-h-14 p-1.5
+              ${!day.isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''}
+              ${day.isToday ? 'bg-blue-50' : ''}
+              ${day.trainings.length > 0 ? 'cursor-pointer hover:bg-blue-50' : ''}
+              ${selectedDay?.date.toDateString() === day.date.toDateString() ? 'ring-2 ring-primary' : ''}
+            `}
           >
             <div className="flex flex-col h-full">
-              <div className={`text-right text-sm ${
-                day.isToday ? 'font-bold text-blue-600' : ''
-              }`}>
+              {/* 日期显示 */}
+              <div className={`
+                text-right font-medium text-sm
+                ${day.isToday ? 'text-blue-600' : ''}
+              `}>
                 {day.date.getDate()}
               </div>
               
-              <div className="flex-grow mt-1">
-                {day.trainings.map(training => (
-                  <div 
-                    key={training.id}
-                    className={`text-xs rounded px-1 py-0.5 mb-1 truncate ${
-                      training.isCompleted 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}
-                  >
-                    {training.isCompleted ? '✓ ' : ''}
-                    {training.title.length > 10 
-                      ? training.title.substring(0, 8) + '...' 
-                      : training.title
-                    }
+              {/* 训练指示器，简化显示方式 */}
+              {day.trainings.length > 0 && (
+                <div className="mt-1 flex justify-end">
+                  <div className={`
+                    flex items-center justify-center 
+                    w-6 h-6 rounded-full
+                    ${day.trainings.some(t => t.isCompleted) 
+                      ? 'bg-green-500 text-white' 
+                      : 'bg-primary text-white'}
+                  `}>
+                    {day.trainings.length}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
+      
+      {/* 图例说明 */}
+      <div className="flex justify-center p-3 bg-gray-50 border-t text-sm">
+        <div className="flex items-center mr-4">
+          <div className="w-3 h-3 rounded-full bg-primary mr-1.5"></div>
+          <span>已安排</span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-3 h-3 rounded-full bg-green-500 mr-1.5"></div>
+          <span>已完成</span>
+        </div>
+      </div>
+      
+      {/* 选中日期的详情弹窗 */}
+      {selectedDay && selectedDay.trainings.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-5 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                {formatDate(selectedDay.date)}
+              </h3>
+              <button 
+                onClick={closeDetailView}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {selectedDay.trainings.map(training => (
+                <div 
+                  key={training.id}
+                  onClick={() => handleTrainingClick(training.id)}
+                  className={`
+                    border rounded-lg p-3 cursor-pointer 
+                    hover:border-primary transition-colors
+                    ${training.isCompleted ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-primary'}
+                  `}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium">{training.title}</div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {training.description}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center text-sm">
+                        <span className="bg-yellow-100 text-yellow-800 rounded-full px-2 py-0.5">
+                          ⭐ {training.starReward}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500 mt-1">
+                        {training.duration}分钟
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-2 flex items-center justify-end">
+                    <span className={`
+                      text-sm font-medium
+                      ${training.isCompleted ? 'text-green-600' : 'text-primary'}
+                    `}>
+                      {training.isCompleted ? '已完成 ✓' : '开始训练 →'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 flex justify-end">
+              <button 
+                onClick={closeDetailView}
+                className="btn btn-primary"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

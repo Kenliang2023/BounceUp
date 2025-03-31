@@ -30,7 +30,7 @@ const TrainingPlanPage = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showCreateCustom, setShowCreateCustom] = useState(false);
   const [customDuration, setCustomDuration] = useState(preferredDuration);
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
+  const [viewMode, setViewMode] = useState('calendar'); // 'list' or 'calendar', 默认改为日历视图
   const [allTrainingDays, setAllTrainingDays] = useState([]);
   
   // 加载所有训练日
@@ -117,25 +117,46 @@ const TrainingPlanPage = () => {
   
   return (
     <div className="space-y-6">
+      {/* 页面标题和视图切换 */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">训练计划</h1>
-        <div className="flex space-x-2">
-          <button 
-            onClick={() => setViewMode('list')}
-            className={`px-2 py-1 rounded ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-gray-100'}`}
-          >
-            列表
-          </button>
+        <div className="bg-gray-100 p-1 rounded-lg flex">
           <button 
             onClick={() => setViewMode('calendar')}
-            className={`px-2 py-1 rounded ${viewMode === 'calendar' ? 'bg-primary text-white' : 'bg-gray-100'}`}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'calendar' 
+                ? 'bg-primary text-white' 
+                : 'hover:bg-gray-200'
+            }`}
+            aria-label="日历视图"
           >
-            日历
+            <span className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              日历
+            </span>
+          </button>
+          <button 
+            onClick={() => setViewMode('list')}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'list' 
+                ? 'bg-primary text-white' 
+                : 'hover:bg-gray-200'
+            }`}
+            aria-label="列表视图"
+          >
+            <span className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              列表
+            </span>
           </button>
         </div>
       </div>
       
-      {/* 计划概览 */}
+      {/* 计划概览 - 在两种视图中都显示 */}
       <div className="card">
         <div className="flex justify-between items-start">
           <div>
@@ -176,9 +197,9 @@ const TrainingPlanPage = () => {
         </div>
       </div>
       
-      {/* 下一个训练提示 */}
+      {/* 下一个训练提示 - 在两种视图中都显示 */}
       {nextTrainingDay && (
-        <div className="card bg-primary bg-opacity-10 p-4">
+        <div className="card bg-primary bg-opacity-5 p-4">
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-medium">下一个训练</h3>
@@ -229,64 +250,52 @@ const TrainingPlanPage = () => {
         </div>
       )}
       
-      {/* 首选训练时长设置 */}
-      <div className="card">
-        <h3 className="font-semibold mb-3">自定义训练设置</h3>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            首选训练时长 ({preferredDuration}分钟)
-          </label>
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            {trainingDurationOptions.map(option => (
-              <button
-                key={option.value}
-                onClick={() => changePreferredDuration(option.value)}
-                className={`px-3 py-2 border rounded-lg text-center ${
-                  preferredDuration === option.value 
-                  ? 'bg-primary text-white border-primary' 
-                  : 'border-gray-300 hover:border-primary'
-                }`}
-              >
-                <div className="font-medium">{option.label}</div>
-                <div className="text-xs truncate">
-                  {option.description}
-                </div>
-              </button>
-            ))}
+      {/* 日历视图 - 移动到顶部位置 */}
+      {viewMode === 'calendar' && (
+        <div className="space-y-6">
+          {/* 日历主体 */}
+          <div className="card overflow-hidden">
+            <TrainingCalendar />
           </div>
           
-          <button 
-            onClick={() => handleCreateCustomTraining()}
-            className="btn btn-outline w-full"
-          >
-            创建自定义训练
-          </button>
-        </div>
-      </div>
-      
-      {/* 日历视图 */}
-      {viewMode === 'calendar' && (
-        <div className="card">
-          <h3 className="font-semibold mb-3">训练日历</h3>
-          <TrainingCalendar />
-          
-          <div className="flex justify-center mt-4">
-            <div className="flex space-x-4 text-sm">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-blue-100 mr-1"></div>
-                <span>已安排</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-green-100 mr-1"></div>
-                <span>已完成</span>
+          {/* 自定义训练设置 */}
+          <div className="card">
+            <h3 className="font-semibold mb-3">自定义训练</h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                首选训练时长 ({preferredDuration}分钟)
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {trainingDurationOptions.slice(0, 6).map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => changePreferredDuration(option.value)}
+                    className={`p-2 border rounded-lg text-center ${
+                      preferredDuration === option.value 
+                      ? 'bg-primary text-white border-primary' 
+                      : 'border-gray-300 hover:border-primary'
+                    }`}
+                  >
+                    <div className="font-medium">{option.label}</div>
+                    <div className="text-xs truncate">
+                      {option.description}
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
+            
+            <button 
+              onClick={() => handleCreateCustomTraining()}
+              className="btn btn-primary w-full"
+            >
+              创建自定义训练
+            </button>
           </div>
         </div>
       )}
       
-      {/* 列表视图 */}
+      {/* 列表视图 - 保持原有逻辑 */}
       {viewMode === 'list' && (
         <>
           {/* 训练周选择器 */}
