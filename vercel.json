@@ -6,5 +6,7 @@
   "github": {
     "enabled": true,
     "silent": false
-  }
+  },
+  "buildCommand": "bash ./vercel-build.sh",
+  "outputDirectory": "dist"
 }
