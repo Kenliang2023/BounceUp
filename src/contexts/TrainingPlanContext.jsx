@@ -5,7 +5,9 @@ import {
   getCurrentLevelByStars,
   getNextLevel,
   defaultTrainingFrequency,
-  weekDayNames
+  weekDayNames,
+  trainingDurationOptions,
+  generateTrainingDayByDuration
 } from '../data/trainingPlan';
 
 // 创建上下文
@@ -17,8 +19,10 @@ export const TrainingPlanProvider = ({ children }) => {
   
   const [currentPlan, setCurrentPlan] = useState(null);
   const [trainingDays, setTrainingDays] = useState([]);
+  const [customTrainingDays, setCustomTrainingDays] = useState([]);
   const [frequency, setFrequency] = useState(defaultTrainingFrequency);
   const [nextTrainingDay, setNextTrainingDay] = useState(null);
+  const [preferredDuration, setPreferredDuration] = useState(20); // 默认时长20分钟
   const [isLoading, setIsLoading] = useState(true);
   
   // 根据用户星星数量加载对应等级的训练计划
@@ -57,16 +61,37 @@ export const TrainingPlanProvider = ({ children }) => {
         parsedDays = createTrainingDaysFromPlan(plan);
       }
       
+      // 加载自定义训练日
+      const storedCustomDays = localStorage.getItem('bounceup_custom_training_days');
+      let parsedCustomDays = [];
+      
+      if (storedCustomDays) {
+        try {
+          parsedCustomDays = JSON.parse(storedCustomDays);
+          
+          // 过滤仅保留当前等级计划的训练日
+          parsedCustomDays = parsedCustomDays.filter(day => day.levelId === levelId);
+        } catch (error) {
+          console.error('Failed to parse custom training days:', error);
+        }
+      }
+      
       setCurrentPlan(plan);
       setTrainingDays(parsedDays);
+      setCustomTrainingDays(parsedCustomDays);
       
       // 确定下一个训练日
-      updateNextTrainingDay(parsedDays);
+      updateNextTrainingDay([...parsedDays, ...parsedCustomDays]);
       
-      // 从本地存储加载训练频率设置
+      // 从本地存储加载训练频率和时长设置
       const storedFrequency = localStorage.getItem('bounceup_training_frequency');
       if (storedFrequency) {
         setFrequency(parseInt(storedFrequency, 10) || defaultTrainingFrequency);
+      }
+      
+      const storedDuration = localStorage.getItem('bounceup_preferred_duration');
+      if (storedDuration) {
+        setPreferredDuration(parseInt(storedDuration, 10) || 20);
       }
     } catch (error) {
       console.error('Failed to load training plan:', error);
@@ -104,7 +129,8 @@ export const TrainingPlanProvider = ({ children }) => {
           scheduledDate: null,
           isTest: day.isTest || false,
           completedDate: null,
-          score: null
+          score: null,
+          isCustom: false
         });
       });
     });
@@ -114,61 +140,155 @@ export const TrainingPlanProvider = ({ children }) => {
   
   // 更新下一个训练日
   const updateNextTrainingDay = (days) => {
-    // 找出未完成的训练日，按周和日排序
+    // 找出已安排但未完成的训练日，按日期排序
     const pendingDays = days
+      .filter(day => !day.isCompleted && day.isPending && day.scheduledDate)
+      .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate));
+    
+    // 如果有已安排的训练日，选择最近的
+    if (pendingDays.length > 0) {
+      setNextTrainingDay(pendingDays[0]);
+      return;
+    }
+    
+    // 如果没有已安排的训练日，找出未完成且未安排的训练日，按周和日排序
+    const availableDays = days
       .filter(day => !day.isCompleted && !day.isPending)
       .sort((a, b) => {
+        // 普通训练优先于测试训练
+        if (a.isTest !== b.isTest) return a.isTest ? 1 : -1;
+        
+        // 按计划排序
         if (a.weekId !== b.weekId) return a.weekId - b.weekId;
         return a.dayId - b.dayId;
       });
     
-    setNextTrainingDay(pendingDays[0] || null);
+    setNextTrainingDay(availableDays[0] || null);
   };
   
   // 保存训练日状态
   useEffect(() => {
     if (trainingDays.length > 0) {
       localStorage.setItem('bounceup_training_days', JSON.stringify(trainingDays));
-      updateNextTrainingDay(trainingDays);
+      updateNextTrainingDay([...trainingDays, ...customTrainingDays]);
     }
   }, [trainingDays]);
+  
+  // 保存自定义训练日状态
+  useEffect(() => {
+    if (customTrainingDays.length > 0) {
+      localStorage.setItem('bounceup_custom_training_days', JSON.stringify(customTrainingDays));
+      updateNextTrainingDay([...trainingDays, ...customTrainingDays]);
+    }
+  }, [customTrainingDays]);
   
   // 保存训练频率设置
   useEffect(() => {
     localStorage.setItem('bounceup_training_frequency', frequency.toString());
   }, [frequency]);
   
+  // 保存首选训练时长
+  useEffect(() => {
+    localStorage.setItem('bounceup_preferred_duration', preferredDuration.toString());
+  }, [preferredDuration]);
+  
   // 安排训练日期
   const scheduleTrainingDay = (trainingDayId, date) => {
-    setTrainingDays(prev => prev.map(day => {
-      if (day.id === trainingDayId) {
-        return {
-          ...day,
-          scheduledDate: date.toISOString(),
-          isPending: true
-        };
-      }
-      return day;
-    }));
+    // 检查是否是自定义训练日
+    const customDay = customTrainingDays.find(day => day.id === trainingDayId);
+    
+    if (customDay) {
+      setCustomTrainingDays(prev => prev.map(day => {
+        if (day.id === trainingDayId) {
+          return {
+            ...day,
+            scheduledDate: date.toISOString(),
+            isPending: true
+          };
+        }
+        return day;
+      }));
+    } else {
+      setTrainingDays(prev => prev.map(day => {
+        if (day.id === trainingDayId) {
+          return {
+            ...day,
+            scheduledDate: date.toISOString(),
+            isPending: true
+          };
+        }
+        return day;
+      }));
+    }
   };
   
   // 取消已安排的训练日
   const unscheduleTrainingDay = (trainingDayId) => {
-    setTrainingDays(prev => prev.map(day => {
-      if (day.id === trainingDayId) {
-        return {
-          ...day,
-          scheduledDate: null,
-          isPending: false
-        };
-      }
-      return day;
-    }));
+    // 检查是否是自定义训练日
+    const customDay = customTrainingDays.find(day => day.id === trainingDayId);
+    
+    if (customDay) {
+      setCustomTrainingDays(prev => prev.map(day => {
+        if (day.id === trainingDayId) {
+          return {
+            ...day,
+            scheduledDate: null,
+            isPending: false
+          };
+        }
+        return day;
+      }));
+    } else {
+      setTrainingDays(prev => prev.map(day => {
+        if (day.id === trainingDayId) {
+          return {
+            ...day,
+            scheduledDate: null,
+            isPending: false
+          };
+        }
+        return day;
+      }));
+    }
+  };
+  
+  // 创建自定义训练日
+  const createCustomTrainingDay = (duration = null, date = null) => {
+    if (!currentPlan) return null;
+    
+    const trainingDuration = duration || preferredDuration;
+    const currentLevel = getCurrentLevelByStars(user.totalStars);
+    
+    // 生成唯一ID
+    const id = `custom_training_day_${Date.now()}`;
+    
+    // 创建自定义训练日
+    const customDay = generateTrainingDayByDuration(currentLevel.id, trainingDuration);
+    
+    const newTrainingDay = {
+      ...customDay,
+      id,
+      scheduledDate: date ? date.toISOString() : null,
+      isPending: date !== null,
+      isCustom: true
+    };
+    
+    // 添加到自定义训练日列表
+    setCustomTrainingDays(prev => [...prev, newTrainingDay]);
+    
+    return newTrainingDay;
+  };
+  
+  // 删除自定义训练日
+  const deleteCustomTrainingDay = (trainingDayId) => {
+    setCustomTrainingDays(prev => prev.filter(day => day.id !== trainingDayId));
   };
   
   // 开始训练日
   const startTrainingDay = (trainingDayId) => {
-    const trainingDay = trainingDays.find(day => day.id === trainingDayId);
+    // 检查是否是自定义训练日
+    const customDay = customTrainingDays.find(day => day.id === trainingDayId);
+    const trainingDay = customDay || trainingDays.find(day => day.id === trainingDayId);
     
     if (!trainingDay) {
       throw new Error('训练日不存在');
@@ -179,7 +299,11 @@ export const TrainingPlanProvider = ({ children }) => {
   
   // 完成训练日
   const completeTrainingDay = (trainingDayId, score, feedback) => {
-    const trainingDay = trainingDays.find(day => day.id === trainingDayId);
+    // 检查是否是自定义训练日
+    const customDay = customTrainingDays.find(day => day.id === trainingDayId);
+    const trainingDay = customDay ? 
+      customTrainingDays.find(day => day.id === trainingDayId) : 
+      trainingDays.find(day => day.id === trainingDayId);
     
     if (!trainingDay) {
       throw new Error('训练日不存在');
@@ -189,18 +313,33 @@ export const TrainingPlanProvider = ({ children }) => {
     const earnedStars = Math.max(1, Math.floor(trainingDay.starReward * (score / 5)));
     
     // 更新训练日状态
-    setTrainingDays(prev => prev.map(day => {
-      if (day.id === trainingDayId) {
-        return {
-          ...day,
-          isCompleted: true,
-          isPending: false,
-          completedDate: new Date().toISOString(),
-          score
-        };
-      }
-      return day;
-    }));
+    if (customDay) {
+      setCustomTrainingDays(prev => prev.map(day => {
+        if (day.id === trainingDayId) {
+          return {
+            ...day,
+            isCompleted: true,
+            isPending: false,
+            completedDate: new Date().toISOString(),
+            score
+          };
+        }
+        return day;
+      }));
+    } else {
+      setTrainingDays(prev => prev.map(day => {
+        if (day.id === trainingDayId) {
+          return {
+            ...day,
+            isCompleted: true,
+            isPending: false,
+            completedDate: new Date().toISOString(),
+            score
+          };
+        }
+        return day;
+      }));
+    }
     
     // 添加星星奖励
     addStars(earnedStars);
@@ -227,6 +366,11 @@ export const TrainingPlanProvider = ({ children }) => {
   // 修改训练频率
   const changeTrainingFrequency = (newFrequency) => {
     setFrequency(Math.max(1, Math.min(7, newFrequency))); // 限制在1-7之间
+  };
+  
+  // 修改首选训练时长
+  const changePreferredDuration = (newDuration) => {
+    setPreferredDuration(Math.max(10, Math.min(60, newDuration))); // 限制在10-60分钟之间
   };
   
   // 获取推荐的训练日期
@@ -261,6 +405,28 @@ export const TrainingPlanProvider = ({ children }) => {
     return dates.slice(0, count);
   };
   
+  // 获取所有训练日
+  const getAllTrainingDays = () => {
+    return [...trainingDays, ...customTrainingDays].sort((a, b) => {
+      // 已安排的按日期排序
+      if (a.scheduledDate && b.scheduledDate) {
+        return new Date(a.scheduledDate) - new Date(b.scheduledDate);
+      }
+      
+      // 已安排的优先于未安排的
+      if (a.scheduledDate && !b.scheduledDate) return -1;
+      if (!a.scheduledDate && b.scheduledDate) return 1;
+      
+      // 自定义训练在最后
+      if (a.isCustom && !b.isCustom) return 1;
+      if (!a.isCustom && b.isCustom) return -1;
+      
+      // 未安排的按周和日排序
+      if (a.weekId !== b.weekId) return a.weekId - b.weekId;
+      return a.dayId - b.dayId;
+    });
+  };
+  
   // 按周获取训练日
   const getTrainingDaysByWeek = (weekId) => {
     if (!currentPlan) return [];
@@ -271,13 +437,22 @@ export const TrainingPlanProvider = ({ children }) => {
   
   // 获取指定训练日的详细信息
   const getTrainingDayDetails = (trainingDayId) => {
-    return trainingDays.find(day => day.id === trainingDayId) || null;
+    // 先在标准训练日中查找
+    let trainingDay = trainingDays.find(day => day.id === trainingDayId);
+    
+    // 如果没找到，在自定义训练日中查找
+    if (!trainingDay) {
+      trainingDay = customTrainingDays.find(day => day.id === trainingDayId);
+    }
+    
+    return trainingDay || null;
   };
   
   // 获取用户当前进度
   const getCurrentProgress = () => {
     if (!currentPlan || !trainingDays.length) return 0;
     
+    // 只计算标准训练日的进度
     const totalDays = trainingDays.length;
     const completedDays = trainingDays.filter(day => day.isCompleted).length;
     
@@ -296,29 +471,98 @@ export const TrainingPlanProvider = ({ children }) => {
     // 创建新的训练日数据
     const newDays = createTrainingDaysFromPlan(currentPlan);
     setTrainingDays(newDays);
-    updateNextTrainingDay(newDays);
+    
+    // 保留自定义训练日
+    updateNextTrainingDay([...newDays, ...customTrainingDays]);
+  };
+  
+  // 获取今天安排的训练日
+  const getTodayTrainings = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return getAllTrainingDays().filter(day => {
+      if (!day.scheduledDate) return false;
+      
+      const scheduledDate = new Date(day.scheduledDate);
+      scheduledDate.setHours(0, 0, 0, 0);
+      
+      return scheduledDate.getTime() === today.getTime();
+    });
+  };
+  
+  // 获取一段时间范围内的训练天数统计
+  const getTrainingStatsByDateRange = (startDate, endDate) => {
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    
+    const allDays = getAllTrainingDays();
+    
+    // 计算完成的训练天数
+    const completedCount = allDays.filter(day => {
+      if (!day.completedDate) return false;
+      
+      const completedDate = new Date(day.completedDate);
+      return completedDate >= start && completedDate <= end;
+    }).length;
+    
+    // 计算安排但未完成的训练天数
+    const scheduledCount = allDays.filter(day => {
+      if (!day.scheduledDate || day.isCompleted) return false;
+      
+      const scheduledDate = new Date(day.scheduledDate);
+      scheduledDate.setHours(0, 0, 0, 0);
+      
+      return scheduledDate >= start && scheduledDate <= end;
+    }).length;
+    
+    // 计算总星星数
+    const totalStars = allDays.filter(day => {
+      if (!day.completedDate) return false;
+      
+      const completedDate = new Date(day.completedDate);
+      return completedDate >= start && completedDate <= end;
+    }).reduce((sum, day) => sum + day.starReward, 0);
+    
+    return {
+      completedCount,
+      scheduledCount,
+      totalStars
+    };
   };
   
   return (
     <TrainingPlanContext.Provider value={{
       currentPlan,
       trainingDays,
+      customTrainingDays,
       nextTrainingDay,
       frequency,
+      preferredDuration,
       isLoading,
       loadTrainingPlan,
       scheduleTrainingDay,
       unscheduleTrainingDay,
+      createCustomTrainingDay,
+      deleteCustomTrainingDay,
       startTrainingDay,
       completeTrainingDay,
       changeTrainingFrequency,
+      changePreferredDuration,
       getRecommendedTrainingDates,
+      getAllTrainingDays,
       getTrainingDaysByWeek,
       getTrainingDayDetails,
       getCurrentProgress,
       getNextTestDay,
       resetCurrentPlan,
-      weekDayNames
+      getTodayTrainings,
+      getTrainingStatsByDateRange,
+      weekDayNames,
+      trainingDurationOptions
     }}>
       {children}
     </TrainingPlanContext.Provider>

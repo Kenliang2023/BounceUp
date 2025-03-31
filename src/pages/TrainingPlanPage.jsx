@@ -2,17 +2,22 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTrainingPlan } from '../contexts/TrainingPlanContext';
 import { useUser } from '../contexts/UserContext';
+import TrainingCalendar from '../components/training/TrainingCalendar';
 
 const TrainingPlanPage = () => {
   const { 
     currentPlan, 
-    trainingDays, 
+    getAllTrainingDays,
     nextTrainingDay,
     scheduleTrainingDay, 
+    createCustomTrainingDay,
     getRecommendedTrainingDates,
     getTrainingDaysByWeek,
     getCurrentProgress,
     weekDayNames,
+    trainingDurationOptions,
+    preferredDuration,
+    changePreferredDuration,
     isLoading
   } = useTrainingPlan();
   const { user } = useUser();
@@ -22,15 +27,26 @@ const TrainingPlanPage = () => {
   const [progress, setProgress] = useState(0);
   const [schedulingDay, setSchedulingDay] = useState(null);
   const [suggestedDates, setSuggestedDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showCreateCustom, setShowCreateCustom] = useState(false);
+  const [customDuration, setCustomDuration] = useState(preferredDuration);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
+  const [allTrainingDays, setAllTrainingDays] = useState([]);
+  
+  // 加载所有训练日
+  useEffect(() => {
+    setAllTrainingDays(getAllTrainingDays());
+  }, [getAllTrainingDays]);
   
   // 计算当前进度
   useEffect(() => {
     setProgress(getCurrentProgress());
-  }, [trainingDays]);
+  }, [getCurrentProgress]);
   
   // 当用户选择一个训练日进行安排时
   const handleScheduleTraining = (trainingDay) => {
     setSchedulingDay(trainingDay);
+    setSelectedDate(null);
     
     // 获取推荐的训练日期
     const recommendedDates = getRecommendedTrainingDates(new Date(), 3);
@@ -41,16 +57,36 @@ const TrainingPlanPage = () => {
   const confirmSchedule = (trainingDayId, date) => {
     scheduleTrainingDay(trainingDayId, date);
     setSchedulingDay(null);
+    setShowCreateCustom(false);
   };
   
   // 取消安排
   const cancelSchedule = () => {
     setSchedulingDay(null);
+    setShowCreateCustom(false);
   };
   
   // 开始训练
   const startTraining = (trainingDayId) => {
     navigate(`/training-day/${trainingDayId}`);
+  };
+  
+  // 创建自定义训练
+  const handleCreateCustomTraining = (date = null) => {
+    setShowCreateCustom(true);
+    setSelectedDate(date);
+  };
+  
+  // 确认创建自定义训练
+  const confirmCreateCustomTraining = () => {
+    const newTrainingDay = createCustomTrainingDay(customDuration, selectedDate);
+    
+    if (newTrainingDay && selectedDate) {
+      scheduleTrainingDay(newTrainingDay.id, selectedDate);
+    }
+    
+    setShowCreateCustom(false);
+    setSelectedDate(null);
   };
   
   // 获取当前周的训练日
@@ -83,16 +119,46 @@ const TrainingPlanPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">训练计划</h1>
+        <div className="flex space-x-2">
+          <button 
+            onClick={() => setViewMode('list')}
+            className={`px-2 py-1 rounded ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-gray-100'}`}
+          >
+            列表
+          </button>
+          <button 
+            onClick={() => setViewMode('calendar')}
+            className={`px-2 py-1 rounded ${viewMode === 'calendar' ? 'bg-primary text-white' : 'bg-gray-100'}`}
+          >
+            日历
+          </button>
+        </div>
       </div>
       
       {/* 计划概览 */}
       <div className="card">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-lg font-semibold">{currentPlan.levelName}</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {currentPlan.description}
-            </p>
+            <div className="flex items-center space-x-2">
+              <span 
+                className={`text-2xl bg-${currentPlan.color}-100 text-${currentPlan.color}-600 p-2 rounded-full`}
+              >
+                {currentPlan.icon}
+              </span>
+              <div>
+                <h2 className="text-lg font-semibold">{currentPlan.levelName}</h2>
+                <p className="text-sm text-gray-600">
+                  {currentPlan.description}
+                </p>
+              </div>
+            </div>
+            
+            {currentPlan.reward && (
+              <div className="mt-2 text-sm">
+                <span className="font-medium">完成奖励：</span>
+                <span className="text-yellow-600">{currentPlan.reward.name}</span>
+              </div>
+            )}
           </div>
           <div className="text-right">
             <div className="text-sm font-medium">总体进度</div>
@@ -115,7 +181,7 @@ const TrainingPlanPage = () => {
         <div className="card bg-primary bg-opacity-10 p-4">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-medium">下一个训练日</h3>
+              <h3 className="font-medium">下一个训练</h3>
               <div className="text-lg font-semibold mt-1">{nextTrainingDay.title}</div>
               <p className="text-sm text-gray-600 mt-1">
                 {nextTrainingDay.description}
@@ -163,116 +229,288 @@ const TrainingPlanPage = () => {
         </div>
       )}
       
-      {/* 训练周选择器 */}
-      <div className="card overflow-x-auto">
-        <h3 className="font-semibold mb-3">训练周</h3>
-        <div className="flex space-x-2">
-          {currentPlan.weeklyPlans.map(week => (
-            <button
-              key={week.weekId}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                activeWeek === week.weekId
-                ? 'bg-primary text-white'
-                : 'bg-gray-100 hover:bg-gray-200'
-              }`}
-              onClick={() => setActiveWeek(week.weekId)}
-            >
-              {week.weekName}
-            </button>
-          ))}
+      {/* 首选训练时长设置 */}
+      <div className="card">
+        <h3 className="font-semibold mb-3">自定义训练设置</h3>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            首选训练时长 ({preferredDuration}分钟)
+          </label>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {trainingDurationOptions.map(option => (
+              <button
+                key={option.value}
+                onClick={() => changePreferredDuration(option.value)}
+                className={`px-3 py-2 border rounded-lg text-center ${
+                  preferredDuration === option.value 
+                  ? 'bg-primary text-white border-primary' 
+                  : 'border-gray-300 hover:border-primary'
+                }`}
+              >
+                <div className="font-medium">{option.label}</div>
+                <div className="text-xs truncate">
+                  {option.description}
+                </div>
+              </button>
+            ))}
+          </div>
+          
+          <button 
+            onClick={() => handleCreateCustomTraining()}
+            className="btn btn-outline w-full"
+          >
+            创建自定义训练
+          </button>
         </div>
       </div>
       
-      {/* 当前周训练日 */}
-      <div className="space-y-4">
-        <h3 className="font-semibold">训练安排</h3>
-        
-        {currentWeekTrainingDays.length > 0 ? (
-          currentWeekTrainingDays.map(day => (
-            <div 
-              key={day.id} 
-              className={`card p-4 border-l-4 ${
-                day.isCompleted 
-                  ? 'border-green-500' 
-                  : day.isPending 
-                    ? 'border-yellow-500'
-                    : 'border-gray-300'
-              }`}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="font-semibold">{day.title}</div>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {day.description}
-                  </p>
-                </div>
-                <div className="flex">
-                  <span className="text-xs bg-yellow-100 text-yellow-800 rounded-full px-2 py-0.5 flex items-center">
-                    <span>⭐</span>
-                    <span className="ml-1">{day.starReward}</span>
-                  </span>
-                  <span className="text-xs bg-primary bg-opacity-10 text-primary rounded-full px-2 py-0.5 ml-2 flex items-center">
-                    <span>⏱️</span>
-                    <span className="ml-1">{day.duration}分钟</span>
-                  </span>
-                </div>
+      {/* 日历视图 */}
+      {viewMode === 'calendar' && (
+        <div className="card">
+          <h3 className="font-semibold mb-3">训练日历</h3>
+          <TrainingCalendar />
+          
+          <div className="flex justify-center mt-4">
+            <div className="flex space-x-4 text-sm">
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-blue-100 mr-1"></div>
+                <span>已安排</span>
               </div>
-              
-              <div className="mt-3">
-                {day.isCompleted ? (
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-green-600 flex items-center">
-                      <span className="mr-1">✓</span>
-                      <span>已完成</span>
-                      {day.score && (
-                        <span className="ml-2">
-                          得分: <span className="font-medium">{day.score.toFixed(1)}</span>
-                        </span>
-                      )}
-                    </div>
-                    <button 
-                      onClick={() => navigate(`/training-day/review/${day.id}`)}
-                      className="btn btn-sm btn-outline"
-                    >
-                      查看详情
-                    </button>
-                  </div>
-                ) : day.scheduledDate ? (
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm">
-                      <span className="font-medium">已安排：</span>
-                      <span>{new Date(day.scheduledDate).toLocaleDateString('zh-CN', {
-                        weekday: 'long',
-                        month: 'long',
-                        day: 'numeric'
-                      })}</span>
-                    </div>
-                    <button 
-                      onClick={() => startTraining(day.id)}
-                      className="btn btn-primary btn-sm"
-                    >
-                      开始训练
-                    </button>
-                  </div>
-                ) : (
-                  <button 
-                    onClick={() => handleScheduleTraining(day)}
-                    className="btn btn-outline w-full"
-                  >
-                    安排这次训练
-                  </button>
-                )}
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-green-100 mr-1"></div>
+                <span>已完成</span>
               </div>
             </div>
-          ))
-        ) : (
-          <div className="card p-6 text-center">
-            <p className="text-gray-600">
-              该周没有训练安排
-            </p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+      
+      {/* 列表视图 */}
+      {viewMode === 'list' && (
+        <>
+          {/* 训练周选择器 */}
+          <div className="card overflow-x-auto">
+            <h3 className="font-semibold mb-3">训练周</h3>
+            <div className="flex space-x-2">
+              {currentPlan.weeklyPlans.map(week => (
+                <button
+                  key={week.weekId}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    activeWeek === week.weekId
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
+                  onClick={() => setActiveWeek(week.weekId)}
+                >
+                  {week.weekName}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* 当前周训练日 */}
+          <div className="space-y-4">
+            <h3 className="font-semibold">训练安排</h3>
+            
+            {currentWeekTrainingDays.length > 0 ? (
+              currentWeekTrainingDays.map(day => (
+                <div 
+                  key={day.id} 
+                  className={`card p-4 border-l-4 ${
+                    day.isCompleted 
+                      ? 'border-green-500' 
+                      : day.isPending 
+                        ? 'border-yellow-500'
+                        : 'border-gray-300'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-semibold">{day.title}</div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {day.description}
+                      </p>
+                    </div>
+                    <div className="flex">
+                      <span className="text-xs bg-yellow-100 text-yellow-800 rounded-full px-2 py-0.5 flex items-center">
+                        <span>⭐</span>
+                        <span className="ml-1">{day.starReward}</span>
+                      </span>
+                      <span className="text-xs bg-primary bg-opacity-10 text-primary rounded-full px-2 py-0.5 ml-2 flex items-center">
+                        <span>⏱️</span>
+                        <span className="ml-1">{day.duration}分钟</span>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    {day.isCompleted ? (
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-green-600 flex items-center">
+                          <span className="mr-1">✓</span>
+                          <span>已完成</span>
+                          {day.score && (
+                            <span className="ml-2">
+                              得分: <span className="font-medium">{day.score.toFixed(1)}</span>
+                            </span>
+                          )}
+                        </div>
+                        <button 
+                          onClick={() => navigate(`/training-day/review/${day.id}`)}
+                          className="btn btn-sm btn-outline"
+                        >
+                          查看详情
+                        </button>
+                      </div>
+                    ) : day.scheduledDate ? (
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm">
+                          <span className="font-medium">已安排：</span>
+                          <span>{new Date(day.scheduledDate).toLocaleDateString('zh-CN', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric'
+                          })}</span>
+                        </div>
+                        <button 
+                          onClick={() => startTraining(day.id)}
+                          className="btn btn-primary btn-sm"
+                        >
+                          开始训练
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => handleScheduleTraining(day)}
+                        className="btn btn-outline w-full"
+                      >
+                        安排这次训练
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="card p-6 text-center">
+                <p className="text-gray-600">
+                  该周没有训练安排
+                </p>
+              </div>
+            )}
+          </div>
+          
+          {/* 自定义训练列表 */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold">自定义训练</h3>
+              <button 
+                onClick={() => handleCreateCustomTraining()}
+                className="btn btn-sm btn-outline"
+              >
+                + 添加
+              </button>
+            </div>
+            
+            {allTrainingDays.filter(d => d.isCustom).length > 0 ? (
+              allTrainingDays.filter(d => d.isCustom).map(day => (
+                <div 
+                  key={day.id} 
+                  className={`card p-4 border-l-4 ${
+                    day.isCompleted 
+                      ? 'border-green-500' 
+                      : day.isPending 
+                        ? 'border-yellow-500'
+                        : 'border-purple-500'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center">
+                        <div className="font-semibold">{day.title}</div>
+                        <span className="text-xs bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 ml-2">
+                          自定义
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {day.description}
+                      </p>
+                    </div>
+                    <div className="flex">
+                      <span className="text-xs bg-yellow-100 text-yellow-800 rounded-full px-2 py-0.5 flex items-center">
+                        <span>⭐</span>
+                        <span className="ml-1">{day.starReward}</span>
+                      </span>
+                      <span className="text-xs bg-primary bg-opacity-10 text-primary rounded-full px-2 py-0.5 ml-2 flex items-center">
+                        <span>⏱️</span>
+                        <span className="ml-1">{day.duration}分钟</span>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    {day.isCompleted ? (
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-green-600 flex items-center">
+                          <span className="mr-1">✓</span>
+                          <span>已完成</span>
+                          {day.score && (
+                            <span className="ml-2">
+                              得分: <span className="font-medium">{day.score.toFixed(1)}</span>
+                            </span>
+                          )}
+                        </div>
+                        <button 
+                          onClick={() => navigate(`/training-day/review/${day.id}`)}
+                          className="btn btn-sm btn-outline"
+                        >
+                          查看详情
+                        </button>
+                      </div>
+                    ) : day.scheduledDate ? (
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm">
+                          <span className="font-medium">已安排：</span>
+                          <span>{new Date(day.scheduledDate).toLocaleDateString('zh-CN', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric'
+                          })}</span>
+                        </div>
+                        <button 
+                          onClick={() => startTraining(day.id)}
+                          className="btn btn-primary btn-sm"
+                        >
+                          开始训练
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => handleScheduleTraining(day)}
+                        className="btn btn-outline w-full"
+                      >
+                        安排这次训练
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="card p-6 text-center">
+                <p className="text-gray-600">
+                  没有自定义训练
+                </p>
+                <button 
+                  onClick={() => handleCreateCustomTraining()}
+                  className="btn btn-primary btn-sm mt-2"
+                >
+                  创建自定义训练
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
       
       {/* 训练日安排弹窗 */}
       {schedulingDay && (
@@ -325,6 +563,86 @@ const TrainingPlanPage = () => {
                 }}
                 className="btn btn-primary flex-1"
               />
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* 创建自定义训练弹窗 */}
+      {showCreateCustom && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">创建自定义训练</h3>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                训练时长 (分钟)
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {trainingDurationOptions.map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => setCustomDuration(option.value)}
+                    className={`p-2 border rounded-lg text-center ${
+                      customDuration === option.value 
+                      ? 'bg-primary text-white border-primary' 
+                      : 'border-gray-300 hover:border-primary'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              
+              <p className="text-sm text-gray-600 mt-2">
+                系统将根据你选择的时长，自动生成适合的训练组合。
+              </p>
+            </div>
+            
+            {selectedDate && (
+              <div className="mb-4">
+                <div className="text-sm font-medium text-gray-700">
+                  安排日期
+                </div>
+                <div className="font-medium mt-1">
+                  {selectedDate.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                  })}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex space-x-3">
+              <button 
+                onClick={cancelSchedule}
+                className="btn btn-outline flex-1"
+              >
+                取消
+              </button>
+              
+              <div className="flex-1 flex space-x-2">
+                {!selectedDate && (
+                  <input
+                    type="date"
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setSelectedDate(new Date(e.target.value));
+                      }
+                    }}
+                    className="flex-1 border rounded-lg p-2"
+                  />
+                )}
+                
+                <button 
+                  onClick={confirmCreateCustomTraining}
+                  className="btn btn-primary flex-1"
+                >
+                  {selectedDate ? '创建并安排' : '仅创建'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
