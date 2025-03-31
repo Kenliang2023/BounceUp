@@ -8,7 +8,12 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+      strategies: 'injectManifest',
+      injectRegister: 'auto',
+      minify: true,
+      srcDir: 'src',
+      filename: 'sw.js',
       manifest: {
         name: 'BounceUp篮球训练助手',
         short_name: 'BounceUp',
@@ -17,6 +22,7 @@ export default defineConfig({
         background_color: '#F8F9FA',
         display: 'standalone',
         orientation: 'portrait',
+        version: '0.1.1',
         icons: [
           {
             src: '/icons/android-chrome-192x192.png',
@@ -44,6 +50,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: new RegExp('^https://fonts.googleapis.com/'),

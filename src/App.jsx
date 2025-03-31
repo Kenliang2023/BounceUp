@@ -23,6 +23,9 @@ import { RewardProvider } from './contexts/RewardContext'
 import PinProtection from './components/common/PinProtection'
 import PrivateRoute from './components/PrivateRoute'
 
+// 导入更新提示组件
+import UpdatePrompt from './components/common/UpdatePrompt'
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +64,7 @@ function App() {
       <UserProvider>
         <TrainingProvider>
           <RewardProvider>
+            <UpdatePrompt />
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               
