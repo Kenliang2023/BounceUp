@@ -10,7 +10,6 @@ const TrainingCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [debugInfo, setDebugInfo] = useState(null); // 用于调试的状态
   
   // 生成当月的日历数据
   useEffect(() => {
@@ -30,46 +29,22 @@ const TrainingCalendar = () => {
     
     // 上个月的日期（填充前面的空格）
     for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+      const prevDate = new Date(year, month - 1, daysInPrevMonth - i);
+      // 查找前一个月相应日期的训练
+      const dayTrainings = findTrainingsForDate(prevDate);
+      
       days.push({
-        date: new Date(year, month - 1, daysInPrevMonth - i),
+        date: prevDate,
         isCurrentMonth: false,
-        trainings: []
+        trainings: dayTrainings
       });
     }
-    
-    // 调试信息
-    let debugTrainings = [];
     
     // 当月的日期
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(year, month, i);
-      const dateTodayFix = new Date(date);
-      dateTodayFix.setHours(0, 0, 0, 0);
-      
-      // 查找这一天的训练
-      const dayTrainings = trainingDays.filter(day => {
-        if (!day.scheduledDate) return false;
-        
-        // 将 scheduledDate 转换为 Date 对象（支持字符串和 Date 对象）
-        const scheduledDate = new Date(day.scheduledDate);
-        scheduledDate.setHours(0, 0, 0, 0);
-        
-        // 调试: 保存训练日期信息
-        if (month === scheduledDate.getMonth()) {
-          debugTrainings.push({
-            id: day.id,
-            title: day.title,
-            scheduledDate: scheduledDate.toISOString(),
-            match: scheduledDate.getTime() === dateTodayFix.getTime(),
-            dateString: scheduledDate.toDateString(),
-            dateTodayFixString: dateTodayFix.toDateString()
-          });
-        }
-        
-        // 比较日期的时间戳，以便进行精确匹配
-        const isMatch = scheduledDate.getTime() === dateTodayFix.getTime();
-        return isMatch;
-      });
+      // 查找当月相应日期的训练
+      const dayTrainings = findTrainingsForDate(date);
       
       days.push({
         date,
@@ -79,25 +54,48 @@ const TrainingCalendar = () => {
       });
     }
     
-    // 保存调试信息
-    setDebugInfo({
-      trainingCount: trainingDays.length,
-      monthYear: `${year}-${month + 1}`,
-      debugTrainings
-    });
-    
     // 下个月的日期（填充后面的空格，确保总行数为6）
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
+      const nextDate = new Date(year, month + 1, i);
+      // 查找下个月相应日期的训练
+      const dayTrainings = findTrainingsForDate(nextDate);
+      
       days.push({
-        date: new Date(year, month + 1, i),
+        date: nextDate,
         isCurrentMonth: false,
-        trainings: []
+        trainings: dayTrainings
       });
     }
     
     setCalendarDays(days);
   }, [currentMonth, trainingDays]);
+  
+  // 辅助函数：为特定日期查找训练
+  const findTrainingsForDate = (date) => {
+    if (!trainingDays || !trainingDays.length) return [];
+    
+    const dateWithoutTime = new Date(date);
+    dateWithoutTime.setHours(0, 0, 0, 0);
+    const dateStr = dateWithoutTime.toISOString().split('T')[0]; // 格式化为 YYYY-MM-DD
+    
+    return trainingDays.filter(day => {
+      if (!day.scheduledDate) return false;
+      
+      // 确保scheduledDate是Date对象
+      let scheduledDate;
+      if (typeof day.scheduledDate === 'string') {
+        scheduledDate = new Date(day.scheduledDate);
+      } else {
+        scheduledDate = new Date(day.scheduledDate);
+      }
+      
+      scheduledDate.setHours(0, 0, 0, 0);
+      const scheduledDateStr = scheduledDate.toISOString().split('T')[0];
+      
+      return scheduledDateStr === dateStr;
+    });
+  };
   
   // 切换到上个月
   const goToPrevMonth = () => {
@@ -148,11 +146,6 @@ const TrainingCalendar = () => {
       day: 'numeric',
       weekday: 'long'
     });
-  };
-  
-  // 格式化日期为ISO字符串，便于比较
-  const formatDateISO = (date) => {
-    return date.toISOString().split('T')[0];
   };
   
   return (
@@ -207,7 +200,7 @@ const TrainingCalendar = () => {
       <div className="grid grid-cols-7 auto-rows-auto">
         {calendarDays.map((day, index) => {
           // 确保日期格式化为ISO字符串，便于调试
-          const dayISODate = formatDateISO(day.date);
+          const dayISODate = day.date.toISOString().split('T')[0];
           
           return (
             <div 
@@ -252,7 +245,7 @@ const TrainingCalendar = () => {
         })}
       </div>
       
-      {/* 图例说明 */}
+      {/* 图例说明 - 修复重复图例问题 */}
       <div className="flex justify-center p-3 bg-gray-50 border-t text-sm">
         <div className="flex items-center mr-4">
           <div className="w-3 h-3 rounded-full bg-primary mr-1.5"></div>
@@ -263,24 +256,6 @@ const TrainingCalendar = () => {
           <span>已完成</span>
         </div>
       </div>
-
-      {/* 可选：调试信息显示 */}
-      {false && debugInfo && (
-        <div className="p-4 border-t text-xs text-gray-500 whitespace-pre-wrap">
-          <strong>总训练数: {debugInfo.trainingCount}</strong><br/>
-          <strong>月份: {debugInfo.monthYear}</strong><br/>
-          <strong>训练详情: </strong><br/>
-          {debugInfo.debugTrainings.map((t, i) => (
-            <div key={i}>
-              ID: {t.id}, 标题: {t.title}<br/>
-              日期: {t.scheduledDate}<br/>
-              匹配: {t.match ? '是' : '否'}<br/>
-              比较: {t.dateString} vs {t.dateTodayFixString}<br/>
-              ---
-            </div>
-          ))}
-        </div>
-      )}
       
       {/* 选中日期的详情弹窗 */}
       {selectedDay && selectedDay.trainings.length > 0 && (
