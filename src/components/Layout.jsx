@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import VersionDisplay from './common/VersionDisplay';
 
 // 导航项配置
 const navItems = [
@@ -94,6 +95,9 @@ const Layout = () => {
             ))}
           </ul>
         </nav>
+        
+        {/* 版本显示 */}
+        <VersionDisplay />
       </footer>
     </div>
   );

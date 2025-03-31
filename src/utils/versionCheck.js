@@ -59,30 +59,8 @@ export const checkForAppUpdate = async () => {
  */
 export const clearCacheAndReload = async () => {
   try {
-    // 清除缓存存储
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      for (const name of cacheNames) {
-        await caches.delete(name);
-      }
-      console.log('所有缓存已清除');
-    }
-    
-    // 如果有 Service Worker
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        // 如果有等待中的 Service Worker，通知其跳过等待
-        if (registration.waiting) {
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
-      }
-    }
-    
-    // 延迟一秒后刷新页面
-    setTimeout(() => {
-      window.location.reload(true);
-    }, 1000);
+    // 跳转到专用的缓存清理页面
+    window.location.href = '/clear-cache.html';
     
   } catch (error) {
     console.error('清除缓存失败:', error);

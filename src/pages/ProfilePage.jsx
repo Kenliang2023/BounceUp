@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { clearCacheAndReload } from '../utils/versionCheck';
 
 const ProfilePage = () => {
   const { user, updateUser, logout, resetAllData } = useUser();
@@ -206,6 +207,16 @@ const ProfilePage = () => {
               <span>→</span>
             </button>
           </div>
+          
+          <div>
+            <button 
+              onClick={clearCacheAndReload}
+              className="w-full text-left flex justify-between items-center py-2 text-blue-600"
+            >
+              <span>刷新应用缓存</span>
+              <span>→</span>
+            </button>
+          </div>
         </div>
       </div>
       
@@ -216,7 +227,7 @@ const ProfilePage = () => {
         <div className="space-y-2">
           <div>
             <div className="text-sm text-gray-600">应用版本</div>
-            <div className="font-medium">1.0.0</div>
+            <div className="font-medium">v0.1.1</div>
           </div>
           
           <div>
