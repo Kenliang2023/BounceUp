@@ -10,6 +10,7 @@ const TrainingCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null); // 用于调试的状态
   
   // 生成当月的日历数据
   useEffect(() => {
@@ -36,6 +37,9 @@ const TrainingCalendar = () => {
       });
     }
     
+    // 调试信息
+    let debugTrainings = [];
+    
     // 当月的日期
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(year, month, i);
@@ -46,10 +50,25 @@ const TrainingCalendar = () => {
       const dayTrainings = trainingDays.filter(day => {
         if (!day.scheduledDate) return false;
         
+        // 将 scheduledDate 转换为 Date 对象（支持字符串和 Date 对象）
         const scheduledDate = new Date(day.scheduledDate);
         scheduledDate.setHours(0, 0, 0, 0);
         
-        return scheduledDate.getTime() === dateTodayFix.getTime();
+        // 调试: 保存训练日期信息
+        if (month === scheduledDate.getMonth()) {
+          debugTrainings.push({
+            id: day.id,
+            title: day.title,
+            scheduledDate: scheduledDate.toISOString(),
+            match: scheduledDate.getTime() === dateTodayFix.getTime(),
+            dateString: scheduledDate.toDateString(),
+            dateTodayFixString: dateTodayFix.toDateString()
+          });
+        }
+        
+        // 比较日期的时间戳，以便进行精确匹配
+        const isMatch = scheduledDate.getTime() === dateTodayFix.getTime();
+        return isMatch;
       });
       
       days.push({
@@ -59,6 +78,13 @@ const TrainingCalendar = () => {
         trainings: dayTrainings
       });
     }
+    
+    // 保存调试信息
+    setDebugInfo({
+      trainingCount: trainingDays.length,
+      monthYear: `${year}-${month + 1}`,
+      debugTrainings
+    });
     
     // 下个月的日期（填充后面的空格，确保总行数为6）
     const remainingDays = 42 - days.length;
@@ -98,10 +124,8 @@ const TrainingCalendar = () => {
   
   // 查看某一天的训练
   const viewDayTrainings = (day) => {
-    setSelectedDay(day);
-    
-    if (day.trainings.length > 0 && !selectedDay) {
-      navigate(`/training-day/${day.trainings[0].id}`);
+    if (day.trainings.length > 0) {
+      setSelectedDay(day);
     }
   };
   
@@ -124,6 +148,11 @@ const TrainingCalendar = () => {
       day: 'numeric',
       weekday: 'long'
     });
+  };
+  
+  // 格式化日期为ISO字符串，便于比较
+  const formatDateISO = (date) => {
+    return date.toISOString().split('T')[0];
   };
   
   return (
@@ -176,44 +205,51 @@ const TrainingCalendar = () => {
       
       {/* 日历格子 - 减少行距，优化显示效果 */}
       <div className="grid grid-cols-7 auto-rows-auto">
-        {calendarDays.map((day, index) => (
-          <div 
-            key={index}
-            onClick={() => viewDayTrainings(day)}
-            className={`
-              border-b border-r min-h-14 p-1.5
-              ${!day.isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''}
-              ${day.isToday ? 'bg-blue-50' : ''}
-              ${day.trainings.length > 0 ? 'cursor-pointer hover:bg-blue-50' : ''}
-              ${selectedDay?.date.toDateString() === day.date.toDateString() ? 'ring-2 ring-primary' : ''}
-            `}
-          >
-            <div className="flex flex-col h-full">
-              {/* 日期显示 */}
-              <div className={`
-                text-right font-medium text-sm
-                ${day.isToday ? 'text-blue-600' : ''}
-              `}>
-                {day.date.getDate()}
-              </div>
-              
-              {/* 训练指示器，简化显示方式 */}
-              {day.trainings.length > 0 && (
-                <div className="mt-1 flex justify-end">
-                  <div className={`
-                    flex items-center justify-center 
-                    w-6 h-6 rounded-full
-                    ${day.trainings.some(t => t.isCompleted) 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-primary text-white'}
-                  `}>
-                    {day.trainings.length}
-                  </div>
+        {calendarDays.map((day, index) => {
+          // 确保日期格式化为ISO字符串，便于调试
+          const dayISODate = formatDateISO(day.date);
+          
+          return (
+            <div 
+              key={index}
+              onClick={() => day.trainings.length > 0 && viewDayTrainings(day)}
+              className={`
+                border-b border-r min-h-14 p-1.5 relative
+                ${!day.isCurrentMonth ? 'bg-gray-50 text-gray-400' : ''}
+                ${day.isToday ? 'bg-blue-50' : ''}
+                ${day.trainings.length > 0 ? 'cursor-pointer hover:bg-blue-50' : ''}
+                ${selectedDay?.date.toDateString() === day.date.toDateString() ? 'ring-2 ring-primary' : ''}
+              `}
+              data-date={dayISODate}
+              data-trainings={day.trainings.length}
+            >
+              <div className="flex flex-col h-full">
+                {/* 日期显示 */}
+                <div className={`
+                  text-right font-medium text-sm
+                  ${day.isToday ? 'text-blue-600' : ''}
+                `}>
+                  {day.date.getDate()}
                 </div>
-              )}
+                
+                {/* 训练指示器，简化显示方式 */}
+                {day.trainings.length > 0 && (
+                  <div className="mt-1 flex justify-end">
+                    <div className={`
+                      flex items-center justify-center 
+                      w-6 h-6 rounded-full
+                      ${day.trainings.some(t => t.isCompleted) 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-primary text-white'}
+                    `}>
+                      {day.trainings.length}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       
       {/* 图例说明 */}
@@ -227,6 +263,24 @@ const TrainingCalendar = () => {
           <span>已完成</span>
         </div>
       </div>
+
+      {/* 可选：调试信息显示 */}
+      {false && debugInfo && (
+        <div className="p-4 border-t text-xs text-gray-500 whitespace-pre-wrap">
+          <strong>总训练数: {debugInfo.trainingCount}</strong><br/>
+          <strong>月份: {debugInfo.monthYear}</strong><br/>
+          <strong>训练详情: </strong><br/>
+          {debugInfo.debugTrainings.map((t, i) => (
+            <div key={i}>
+              ID: {t.id}, 标题: {t.title}<br/>
+              日期: {t.scheduledDate}<br/>
+              匹配: {t.match ? '是' : '否'}<br/>
+              比较: {t.dateString} vs {t.dateTodayFixString}<br/>
+              ---
+            </div>
+          ))}
+        </div>
+      )}
       
       {/* 选中日期的详情弹窗 */}
       {selectedDay && selectedDay.trainings.length > 0 && (

@@ -1,69 +1,54 @@
-import { useState, useEffect } from 'react';
-import { clearCacheAndReload } from '../../utils/versionCheck';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createCacheCleanerPage } from '../../utils/cacheManager';
 
 const VersionDisplay = () => {
-  const [currentVersion, setCurrentVersion] = useState('加载中...');
-  const [isLatestVersion, setIsLatestVersion] = useState(true);
-  const [showRefreshButton, setShowRefreshButton] = useState(false);
+  const navigate = useNavigate();
+  const [showMenu, setShowMenu] = useState(false);
+  const version = import.meta.env.VITE_APP_VERSION || '0.1.1';
   
-  useEffect(() => {
-    // 获取当前版本
-    const metaVersion = document.querySelector('meta[name="version"]');
-    const version = metaVersion ? metaVersion.content : '未知';
-    setCurrentVersion(version);
-    
-    // 监听服务工作线程消息
-    const checkVersion = () => {
-      // 如果是在开发环境，不显示刷新按钮
-      if (window.location.hostname === 'localhost') {
-        return;
-      }
-      
-      // 检测是否有新版本可用
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistration().then(registration => {
-          if (registration && registration.waiting) {
-            console.log('新版本可用，等待更新');
-            setIsLatestVersion(false);
-            setShowRefreshButton(true);
-          }
-        });
-      }
-    };
-    
-    checkVersion();
-    
-    // 添加监听器以检测更新
-    window.addEventListener('sw-update-found', () => {
-      setIsLatestVersion(false);
-      setShowRefreshButton(true);
-    });
-    
-    return () => {
-      window.removeEventListener('sw-update-found', () => {});
-    };
-  }, []);
+  const handleMenuToggle = () => {
+    setShowMenu(!showMenu);
+  };
   
-  const handleForceRefresh = () => {
-    clearCacheAndReload();
+  const handleCleanCache = () => {
+    // 尝试创建缓存清理页面，如果失败则使用路由导航
+    const success = createCacheCleanerPage();
+    if (!success) {
+      navigate('/clean-cache');
+    }
+    setShowMenu(false);
   };
   
   return (
-    <div className="text-center py-2 text-xs text-gray-500">
-      <p>
-        {isLatestVersion 
-          ? `当前版本: v${currentVersion}` 
-          : `当前版本: v${currentVersion} (有新版本可用)`}
-      </p>
-      
-      {showRefreshButton && (
-        <button 
-          onClick={handleForceRefresh}
-          className="mt-1 px-3 py-1 bg-primary text-white text-xs rounded-md"
-        >
-          强制更新到最新版本
-        </button>
+    <div className="fixed bottom-4 right-4 z-40">
+      {showMenu && (
+        <div className="absolute bottom-full right-0 mb-2 bg-white rounded-lg shadow-lg p-2 w-48">
+          <div className="text-xs text-gray-600 mb-2 px-2">
+            当前版本: v{version}
+          </div>
+          
+          <button
+            onClick={handleCleanCache}
+            className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            清除缓存
+          </button>
+        </div>
       )}
+      
+      <button
+        onClick={handleMenuToggle}
+        className="bg-white rounded-full w-10 h-10 shadow-md flex items-center justify-center hover:bg-gray-50"
+        aria-label="应用版本与设置"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
     </div>
   );
 };

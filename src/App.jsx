@@ -15,6 +15,7 @@ import ProgressPage from './pages/ProgressPage'
 import RewardsPage from './pages/RewardsPage'
 import ProfilePage from './pages/ProfilePage'
 import NotFoundPage from './pages/NotFoundPage'
+import CacheCleanerPage from './pages/CacheCleanerPage'
 
 // 导入上下文组件
 import { UserProvider } from './contexts/UserContext'
@@ -28,6 +29,9 @@ import PrivateRoute from './components/PrivateRoute'
 
 // 导入更新提示组件
 import UpdatePrompt from './components/common/UpdatePrompt'
+
+// 导入版本显示组件
+import VersionDisplay from './components/common/VersionDisplay'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -71,6 +75,7 @@ function App() {
               <UpdatePrompt />
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/clean-cache" element={<CacheCleanerPage />} />
                 
                 <Route path="/" element={
                   <PrivateRoute>
@@ -91,6 +96,8 @@ function App() {
                 
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
+              
+              <VersionDisplay />
             </RewardProvider>
           </TrainingPlanProvider>
         </TrainingProvider>
