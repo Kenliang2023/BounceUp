@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import DataManagement from '../components/profile/DataManagement';
 import { clearCacheAndReload } from '../utils/versionCheck';
 
 const ProfilePage = () => {
@@ -183,6 +184,11 @@ const ProfilePage = () => {
         )}
       </div>
       
+      {/* 数据管理 */}
+      <div className="card">
+        <DataManagement />
+      </div>
+      
       {/* 应用设置 */}
       <div className="card">
         <h2 className="text-xl font-semibold mb-4">应用设置</h2>
@@ -266,4 +272,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage; 
+export default ProfilePage;

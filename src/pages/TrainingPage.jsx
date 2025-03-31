@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTraining } from '../contexts/TrainingContext';
 import { findTrainingById } from '../data/allTrainings';
+import CountdownTimer from '../components/training/CountdownTimer';
 
 const TrainingPage = () => {
   const { id } = useParams();
@@ -17,6 +18,9 @@ const TrainingPage = () => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [earnedStars, setEarnedStars] = useState(0);
   const [error, setError] = useState(null);
+  const [showTimerAlert, setShowTimerAlert] = useState(false);
+  const [timerMessage, setTimerMessage] = useState('');
+  const [isCountdownActive, setIsCountdownActive] = useState(false);
   
   // 获取训练数据
   useEffect(() => {
@@ -53,6 +57,7 @@ const TrainingPage = () => {
       //startTraining(id);
       setIsTrainingActive(true);
       setCurrentStep(0);
+      setIsCountdownActive(true);
     } catch (error) {
       console.error('开始训练失败:', error);
       setError(`开始训练失败: ${error.message}`);
@@ -61,12 +66,41 @@ const TrainingPage = () => {
   
   // 下一步
   const handleNextStep = () => {
+    // 重置计时器状态
+    setIsCountdownActive(false);
+    
     if (currentStep < training.steps.length - 1) {
       setCurrentStep(prevStep => prevStep + 1);
+      // 切换到下一步骤后重新激活计时器
+      setTimeout(() => setIsCountdownActive(true), 100);
     } else {
       // 最后一步，显示完成模态框
       setShowCompletionModal(true);
     }
+  };
+  
+  // 计时器完成回调
+  const handleTimerComplete = () => {
+    // 当计时器完成时，显示时间到提示
+    setTimerMessage('本步时间已到，请点击下一步继续');
+    setShowTimerAlert(true);
+    
+    // 3秒后自动隐藏提示
+    setTimeout(() => {
+      setShowTimerAlert(false);
+    }, 3000);
+  };
+  
+  // 分钟变化回调
+  const handleMinuteChange = (minutesLeft) => {
+    // 当分钟变化时，显示提示
+    setTimerMessage(`还剩 ${minutesLeft} 分钟`);
+    setShowTimerAlert(true);
+    
+    // 2秒后自动隐藏提示
+    setTimeout(() => {
+      setShowTimerAlert(false);
+    }, 2000);
   };
   
   // 完成训练
@@ -175,6 +209,14 @@ const TrainingPage = () => {
   
   return (
     <div className="space-y-6">
+      {/* 计时器提示 */}
+      {showTimerAlert && (
+        <div className="fixed top-16 left-0 right-0 flex justify-center z-40">
+          <div className="bg-primary text-white px-4 py-2 rounded-lg shadow-lg animate-fadeInDown">
+            {timerMessage}
+          </div>
+        </div>
+      )}
       {/* 训练详情 */}
       {!isTrainingActive && (
         <div className="card">
@@ -274,7 +316,14 @@ const TrainingPage = () => {
             </p>
             
             <div className="bg-gray-100 rounded-lg p-4 mb-4 text-center">
-              <div className="text-3xl mb-2">🏀</div>
+              <div className="flex justify-center mb-3">
+                <CountdownTimer 
+                  minutes={currentStepData.duration} 
+                  onComplete={handleTimerComplete}
+                  onMinuteChange={handleMinuteChange}
+                  isActive={isCountdownActive}
+                />
+              </div>
               <p className="text-sm text-gray-700">
                 训练时长: {currentStepData.duration}分钟
               </p>
