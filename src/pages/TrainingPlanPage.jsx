@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTrainingPlan } from '../contexts/TrainingPlanContext';
 import { useUser } from '../contexts/UserContext';
 import TrainingCalendar from '../components/training/TrainingCalendar';
+import AutoPlanButton from '../components/training/AutoPlanButton';
 
 const TrainingPlanPage = () => {
   const { 
@@ -253,6 +254,11 @@ const TrainingPlanPage = () => {
       {/* 日历视图 - 移动到顶部位置 */}
       {viewMode === 'calendar' && (
         <div className="space-y-6">
+          {/* 添加自动计划按钮 */}
+          <div className="flex justify-end">
+            <AutoPlanButton className="px-4 py-2" buttonText="智能生成训练计划" />
+          </div>
+          
           {/* 日历主体 */}
           <div className="card overflow-hidden">
             <TrainingCalendar />
@@ -298,6 +304,11 @@ const TrainingPlanPage = () => {
       {/* 列表视图 - 保持原有逻辑 */}
       {viewMode === 'list' && (
         <>
+          {/* 添加自动计划按钮 */}
+          <div className="flex justify-end mb-4">
+            <AutoPlanButton className="px-4 py-2" buttonText="智能生成训练计划" />
+          </div>
+          
           {/* 训练周选择器 */}
           <div className="card overflow-x-auto">
             <h3 className="font-semibold mb-3">训练周</h3>

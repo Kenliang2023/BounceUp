@@ -1,13 +1,24 @@
 import { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { useReward } from '../contexts/RewardContext';
+import RewardManagerButton from '../components/reward/RewardManagerButton';
+import RedemptionHistoryButton from '../components/reward/RedemptionHistoryButton';
 
 const RewardsPage = () => {
   const { user } = useUser();
-  const { rewards, redeemReward, getNextLevel, redeemedRewards } = useReward();
+  const { 
+    rewards, 
+    redeemReward, 
+    getNextLevel, 
+    redeemedRewards,
+    categoryOptions,
+    getRewardsByCategory,
+    getCategoryLabel
+  } = useReward();
   const [selectedReward, setSelectedReward] = useState(null);
   const [redeemSuccess, setRedeemSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
   
   const nextLevel = getNextLevel();
   
@@ -37,6 +48,10 @@ const RewardsPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">奖励中心</h1>
+        <div className="flex space-x-2">
+          <RedemptionHistoryButton className="px-3 py-1 text-sm border rounded hover:bg-gray-50" />
+          <RewardManagerButton className="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary-dark" />
+        </div>
       </div>
       
       {/* 星星和等级 */}
@@ -74,10 +89,38 @@ const RewardsPage = () => {
       <div className="card">
         <h2 className="text-xl font-semibold mb-4">可兑换奖励</h2>
         
-        {rewards.length > 0 ? (
+        {/* 分类筛选 */}
+        <div className="flex overflow-x-auto pb-2 mb-3">
+          <button
+            onClick={() => setActiveCategory('all')}
+            className={`px-3 py-1 rounded-full text-sm whitespace-nowrap mr-2 ${
+              activeCategory === 'all' 
+                ? 'bg-primary text-white' 
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}
+          >
+            全部
+          </button>
+          
+          {categoryOptions.filter(c => c.value !== 'default').map(category => (
+            <button
+              key={category.value}
+              onClick={() => setActiveCategory(category.value)}
+              className={`px-3 py-1 rounded-full text-sm whitespace-nowrap mr-2 ${
+                activeCategory === category.value 
+                  ? 'bg-primary text-white' 
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              {category.label}
+            </button>
+          ))}
+        </div>
+        
+        {getRewardsByCategory(activeCategory).length > 0 ? (
           <>
             <div className="space-y-4">
-              {rewards.map((reward) => (
+              {getRewardsByCategory(activeCategory).map((reward) => (
                 <div 
                   key={reward.id}
                   className={`p-3 border rounded-lg cursor-pointer 
@@ -88,6 +131,13 @@ const RewardsPage = () => {
                     <div>
                       <div className="font-semibold">{reward.name}</div>
                       <div className="text-sm text-gray-600 mt-1">{reward.description}</div>
+                      {reward.category && reward.category !== 'default' && (
+                        <div className="mt-1">
+                          <span className="text-xs bg-gray-100 text-gray-700 rounded-full px-2 py-0.5">
+                            {getCategoryLabel(reward.category)}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center bg-gray-100 px-2 py-1 rounded">
                       <span className="text-secondary text-sm mr-1">⭐</span>
@@ -171,13 +221,32 @@ const RewardsPage = () => {
         )}
       </div>
       
-      {/* 成就系统 (占位) */}
-      <div className="card bg-gray-50 p-6 flex flex-col items-center justify-center">
-        <div className="text-3xl mb-3">🏆</div>
-        <div className="font-semibold">成就系统</div>
-        <p className="text-sm text-gray-600 text-center mt-2">
-          完成特定挑战获得成就和额外奖励，即将推出！
-        </p>
+      {/* 成就系统占位 */}
+      <div className="card bg-gradient-to-r from-purple-50 to-blue-50 p-6">
+        <div className="flex flex-col items-center justify-center">
+          <div className="text-3xl mb-3">🏆</div>
+          <div className="font-semibold text-center">成就系统</div>
+          <p className="text-sm text-gray-600 text-center mt-2 max-w-sm">
+            即将推出更丰富的成就系统！完成特定挑战获得很酷的徽章和奖励。
+          </p>
+          <div className="mt-4 grid grid-cols-4 gap-3 w-full max-w-md">
+            <div className="bg-gray-100 border border-gray-200 rounded-full w-12 h-12 flex items-center justify-center opacity-60">
+              🏀
+            </div>
+            <div className="bg-gray-100 border border-gray-200 rounded-full w-12 h-12 flex items-center justify-center opacity-60">
+              🔥
+            </div>
+            <div className="bg-gray-100 border border-gray-200 rounded-full w-12 h-12 flex items-center justify-center opacity-60">
+              ⭐
+            </div>
+            <div className="bg-gray-100 border border-gray-200 rounded-full w-12 h-12 flex items-center justify-center opacity-60">
+              💪
+            </div>
+          </div>
+          <div className="mt-4">
+            <span className="text-xs bg-yellow-100 text-yellow-800 rounded-full px-3 py-1">即将上线</span>
+          </div>
+        </div>
       </div>
     </div>
   );

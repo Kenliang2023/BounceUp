@@ -11,35 +11,45 @@ const defaultRewards = [
     name: '额外30分钟游戏时间',
     description: '完成训练后，获得额外30分钟的游戏时间',
     starCost: 10,
-    available: true
+    available: true,
+    category: 'screen',
+    priority: 'medium'
   },
   {
     id: 'reward2',
     name: '选择一部电影观看',
     description: '可以选择一部父母允许的电影在周末观看',
     starCost: 20,
-    available: true
+    available: true,
+    category: 'screen',
+    priority: 'medium'
   },
   {
     id: 'reward3',
     name: '去公园打篮球',
     description: '周末与父母一起去公园打篮球',
     starCost: 15,
-    available: true
+    available: true,
+    category: 'activity',
+    priority: 'high'
   },
   {
     id: 'reward4',
     name: '篮球周边小物品',
     description: '可以获得一个篮球相关的小物品（手环、头带等）',
     starCost: 30,
-    available: true
+    available: true,
+    category: 'item',
+    priority: 'medium'
   },
   {
     id: 'reward5',
     name: '特别奖励 - 篮球',
     description: '获得一个新篮球（需要完成特定挑战）',
     starCost: 100,
-    available: false
+    available: false,
+    category: 'special',
+    priority: 'top'
   }
 ];
 
@@ -59,6 +69,23 @@ export const RewardProvider = ({ children }) => {
   const { user, updateUser } = useUser();
   const [rewards, setRewards] = useState([]);
   const [redeemedRewards, setRedeemedRewards] = useState([]);
+  
+  // 分类选项
+  const categoryOptions = [
+    { value: 'default', label: '默认' },
+    { value: 'screen', label: '屏幕时间' },
+    { value: 'activity', label: '活动' },
+    { value: 'item', label: '物品' },
+    { value: 'special', label: '特别奖励' }
+  ];
+  
+  // 优先级选项
+  const priorityOptions = [
+    { value: 'low', label: '低', color: 'blue' },
+    { value: 'medium', label: '中', color: 'green' },
+    { value: 'high', label: '高', color: 'orange' },
+    { value: 'top', label: '最高', color: 'red' }
+  ];
   
   // 初始化奖励系统
   useEffect(() => {
@@ -116,6 +143,42 @@ export const RewardProvider = ({ children }) => {
     return null;
   };
   
+  // 根据类别获取奖励
+  const getRewardsByCategory = (category) => {
+    if (!category || category === 'all') {
+      return rewards.filter(r => r.available);
+    }
+    
+    return rewards.filter(r => r.available && r.category === category);
+  };
+  
+  // 根据优先级获取奖励
+  const getRewardsByPriority = (priority) => {
+    if (!priority || priority === 'all') {
+      return rewards.filter(r => r.available);
+    }
+    
+    return rewards.filter(r => r.available && r.priority === priority);
+  };
+  
+  // 获取类别标签
+  const getCategoryLabel = (categoryValue) => {
+    const category = categoryOptions.find(c => c.value === categoryValue);
+    return category ? category.label : '默认';
+  };
+  
+  // 获取优先级标签
+  const getPriorityLabel = (priorityValue) => {
+    const priority = priorityOptions.find(p => p.value === priorityValue);
+    return priority ? priority.label : '中';
+  };
+  
+  // 获取优先级颜色
+  const getPriorityColor = (priorityValue) => {
+    const priority = priorityOptions.find(p => p.value === priorityValue);
+    return priority ? priority.color : 'green';
+  };
+  
   // 兑换奖励
   const redeemReward = (rewardId) => {
     const reward = rewards.find(r => r.id === rewardId);
@@ -144,6 +207,7 @@ export const RewardProvider = ({ children }) => {
       rewardId: reward.id,
       rewardName: reward.name,
       cost: reward.starCost,
+      category: reward.category,
       date: new Date().toISOString()
     };
     
@@ -181,7 +245,14 @@ export const RewardProvider = ({ children }) => {
       addReward,
       updateReward,
       getNextLevel,
-      levelSystem
+      levelSystem,
+      categoryOptions,
+      priorityOptions,
+      getRewardsByCategory,
+      getRewardsByPriority,
+      getCategoryLabel,
+      getPriorityLabel,
+      getPriorityColor
     }}>
       {children}
     </RewardContext.Provider>
@@ -194,4 +265,4 @@ export const useReward = () => {
     throw new Error('useReward must be used within a RewardProvider');
   }
   return context;
-}; 
+};

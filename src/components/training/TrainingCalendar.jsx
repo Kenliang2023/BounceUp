@@ -5,7 +5,7 @@ import { weekDayNames } from '../../data/trainingPlan';
 
 const TrainingCalendar = () => {
   const navigate = useNavigate();
-  const { trainingDays } = useTrainingPlan();
+  const { trainingDays, getAllTrainingDays } = useTrainingPlan();
   
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
@@ -69,17 +69,18 @@ const TrainingCalendar = () => {
     }
     
     setCalendarDays(days);
-  }, [currentMonth, trainingDays]);
+  }, [currentMonth, getAllTrainingDays]);
   
   // 辅助函数：为特定日期查找训练
   const findTrainingsForDate = (date) => {
-    if (!trainingDays || !trainingDays.length) return [];
+    const allTrainingDays = getAllTrainingDays();
+    if (!allTrainingDays || !allTrainingDays.length) return [];
     
     const dateWithoutTime = new Date(date);
     dateWithoutTime.setHours(0, 0, 0, 0);
     const dateStr = dateWithoutTime.toISOString().split('T')[0]; // 格式化为 YYYY-MM-DD
     
-    return trainingDays.filter(day => {
+    const filteredTrainings = allTrainingDays.filter(day => {
       if (!day.scheduledDate) return false;
       
       // 确保scheduledDate是Date对象
@@ -95,6 +96,8 @@ const TrainingCalendar = () => {
       
       return scheduledDateStr === dateStr;
     });
+    
+    return filteredTrainings;
   };
   
   // 切换到上个月
@@ -233,7 +236,9 @@ const TrainingCalendar = () => {
                       w-6 h-6 rounded-full
                       ${day.trainings.some(t => t.isCompleted) 
                         ? 'bg-green-500 text-white' 
-                        : 'bg-primary text-white'}
+                        : day.trainings.some(t => t.isCustom)
+                          ? 'bg-purple-500 text-white'
+                          : 'bg-primary text-white'}
                     `}>
                       {day.trainings.length}
                     </div>
@@ -251,9 +256,13 @@ const TrainingCalendar = () => {
           <div className="w-3 h-3 rounded-full bg-primary mr-1.5"></div>
           <span>已安排</span>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center mr-4">
           <div className="w-3 h-3 rounded-full bg-green-500 mr-1.5"></div>
           <span>已完成</span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-3 h-3 rounded-full bg-purple-500 mr-1.5"></div>
+          <span>自定义</span>
         </div>
       </div>
       
@@ -283,7 +292,11 @@ const TrainingCalendar = () => {
                   className={`
                     border rounded-lg p-3 cursor-pointer 
                     hover:border-primary transition-colors
-                    ${training.isCompleted ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-primary'}
+                    ${training.isCompleted 
+                      ? 'border-l-4 border-l-green-500' 
+                      : training.isCustom 
+                        ? 'border-l-4 border-l-purple-500' 
+                        : 'border-l-4 border-l-primary'}
                   `}
                 >
                   <div className="flex justify-between items-start">
@@ -305,10 +318,13 @@ const TrainingCalendar = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-2 flex items-center justify-end">
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-xs text-gray-500">
+                      {training.isCustom ? '自定义训练' : '标准训练'}
+                    </span>
                     <span className={`
                       text-sm font-medium
-                      ${training.isCompleted ? 'text-green-600' : 'text-primary'}
+                      ${training.isCompleted ? 'text-green-600' : training.isCustom ? 'text-purple-600' : 'text-primary'}
                     `}>
                       {training.isCompleted ? '已完成 ✓' : '开始训练 →'}
                     </span>

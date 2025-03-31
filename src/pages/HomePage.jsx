@@ -5,6 +5,7 @@ import { useTraining } from '../contexts/TrainingContext';
 import { useTrainingPlan } from '../contexts/TrainingPlanContext';
 import { useReward } from '../contexts/RewardContext';
 import { getCurrentLevelByStars } from '../data/trainingPlan';
+import AutoPlanButton from '../components/training/AutoPlanButton';
 
 const HomePage = () => {
   const { user } = useUser();
@@ -208,9 +209,12 @@ const HomePage = () => {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">训练计划进度</h2>
-            <Link to="/training-plan" className="text-primary text-sm">
-              查看详情
-            </Link>
+            <div className="flex items-center space-x-2">
+              <AutoPlanButton className="px-3 py-1 text-sm" buttonText="智能计划" />
+              <Link to="/training-plan" className="text-primary text-sm">
+                查看详情
+              </Link>
+            </div>
           </div>
           
           <div>

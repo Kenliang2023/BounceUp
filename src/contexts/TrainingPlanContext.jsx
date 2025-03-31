@@ -9,6 +9,11 @@ import {
   trainingDurationOptions,
   generateTrainingDayByDuration
 } from '../data/trainingPlan';
+import { 
+  generateAutomaticTrainingPlan, 
+  generateWeaknessTrainingPlan,
+  generateTodayRecommendedTraining
+} from '../utils/trainingPlanGenerator';
 
 // 创建上下文
 const TrainingPlanContext = createContext(null);
@@ -491,6 +496,69 @@ export const TrainingPlanProvider = ({ children }) => {
     });
   };
   
+  // 获取今日推荐训练
+  const getTodayRecommendedTraining = (duration = preferredDuration) => {
+    return generateTodayRecommendedTraining(user, duration);
+  };
+  
+  // 生成自动训练计划
+  const generateAutoPlan = (preferences = {}, daysAhead = 14) => {
+    // 默认使用当前频率和时长
+    const defaultPreferences = {
+      frequency: frequency,
+      duration: preferredDuration,
+      ...preferences
+    };
+    
+    // 生成计划
+    const plan = generateAutomaticTrainingPlan(user, defaultPreferences, daysAhead);
+    
+    if (plan && plan.trainingDays && plan.trainingDays.length > 0) {
+      // 添加生成的训练日到自定义训练中
+      const newCustomDays = [...customTrainingDays];
+      
+      plan.trainingDays.forEach(day => {
+        // 确保ID是唯一的
+        day.id = `auto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        newCustomDays.push(day);
+      });
+      
+      setCustomTrainingDays(newCustomDays);
+      return plan.trainingDays.length;
+    }
+    
+    return 0;
+  };
+  
+  // 生成针对弱项技能的训练计划
+  const generateWeaknessPlan = (preferences = {}, daysAhead = 14) => {
+    // 默认使用当前频率和时长
+    const defaultPreferences = {
+      frequency: frequency,
+      duration: preferredDuration,
+      ...preferences
+    };
+    
+    // 生成计划
+    const plan = generateWeaknessTrainingPlan(user, defaultPreferences, daysAhead);
+    
+    if (plan && plan.trainingDays && plan.trainingDays.length > 0) {
+      // 添加生成的训练日到自定义训练中
+      const newCustomDays = [...customTrainingDays];
+      
+      plan.trainingDays.forEach(day => {
+        // 确保ID是唯一的
+        day.id = `weakness_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        newCustomDays.push(day);
+      });
+      
+      setCustomTrainingDays(newCustomDays);
+      return plan.trainingDays.length;
+    }
+    
+    return 0;
+  };
+  
   // 获取一段时间范围内的训练天数统计
   const getTrainingStatsByDateRange = (startDate, endDate) => {
     const start = new Date(startDate);
@@ -560,6 +628,9 @@ export const TrainingPlanProvider = ({ children }) => {
       getNextTestDay,
       resetCurrentPlan,
       getTodayTrainings,
+      getTodayRecommendedTraining,
+      generateAutoPlan,
+      generateWeaknessPlan,
       getTrainingStatsByDateRange,
       weekDayNames,
       trainingDurationOptions
