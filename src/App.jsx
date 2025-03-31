@@ -9,6 +9,8 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import TrainingSelectPage from './pages/TrainingSelectPage'
 import TrainingPage from './pages/TrainingPage'
+import TrainingPlanPage from './pages/TrainingPlanPage'
+import TrainingDayPage from './pages/TrainingDayPage'
 import ProgressPage from './pages/ProgressPage'
 import RewardsPage from './pages/RewardsPage'
 import ProfilePage from './pages/ProfilePage'
@@ -17,6 +19,7 @@ import NotFoundPage from './pages/NotFoundPage'
 // 导入上下文组件
 import { UserProvider } from './contexts/UserContext'
 import { TrainingProvider } from './contexts/TrainingContext'
+import { TrainingPlanProvider } from './contexts/TrainingPlanContext'
 import { RewardProvider } from './contexts/RewardContext'
 
 // PIN码保护组件
@@ -63,32 +66,37 @@ function App() {
     <BrowserRouter>
       <UserProvider>
         <TrainingProvider>
-          <RewardProvider>
-            <UpdatePrompt />
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              
-              <Route path="/" element={
-                <PrivateRoute>
-                  <Layout />
-                </PrivateRoute>
-              }>
-                <Route index element={<HomePage />} />
-                <Route path="training" element={<TrainingSelectPage />} />
-                <Route path="training/:id" element={<TrainingPage />} />
-                <Route path="progress" element={<ProgressPage />} />
-                <Route path="rewards" element={<RewardsPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
-              
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-          </RewardProvider>
+          <TrainingPlanProvider>
+            <RewardProvider>
+              <UpdatePrompt />
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                
+                <Route path="/" element={
+                  <PrivateRoute>
+                    <Layout />
+                  </PrivateRoute>
+                }>
+                  <Route index element={<HomePage />} />
+                  <Route path="training" element={<TrainingSelectPage />} />
+                  <Route path="training/:id" element={<TrainingPage />} />
+                  <Route path="training-plan" element={<TrainingPlanPage />} />
+                  <Route path="training-day/:id" element={<TrainingDayPage />} />
+                  <Route path="training-day/review/:id" element={<TrainingDayPage review={true} />} />
+                  <Route path="progress" element={<ProgressPage />} />
+                  <Route path="rewards" element={<RewardsPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Route>
+                
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </RewardProvider>
+          </TrainingPlanProvider>
         </TrainingProvider>
       </UserProvider>
     </BrowserRouter>
   )
 }
 
-export default App 
+export default App

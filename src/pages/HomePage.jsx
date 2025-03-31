@@ -1,16 +1,28 @@
 import { Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { useTraining } from '../contexts/TrainingContext';
+import { useTrainingPlan } from '../contexts/TrainingPlanContext';
 import { useReward } from '../contexts/RewardContext';
 
 const HomePage = () => {
   const { user } = useUser();
-  const { skillProgress, trainingHistory, getRecommendedTrainings } = useTraining();
+  const { skillProgress, getRecentTrainingHistory } = useTraining();
+  const { 
+    nextTrainingDay, 
+    currentPlan, 
+    getRecommendedTrainingDates, 
+    getCurrentProgress 
+  } = useTrainingPlan();
   const { getNextLevel } = useReward();
   
   const nextLevel = getNextLevel();
-  const recentTraining = trainingHistory.length > 0 ? trainingHistory[0] : null;
-  const recommendedTrainings = getRecommendedTrainings(2);
+  const recentTrainings = getRecentTrainingHistory(1);
+  const recentTraining = recentTrainings.length > 0 ? recentTrainings[0] : null;
+  const trainingProgress = getCurrentProgress();
+  
+  // 获取推荐的下一个训练日期
+  const recommendedDates = getRecommendedTrainingDates(new Date(), 1);
+  const nextTrainingDate = recommendedDates.length > 0 ? recommendedDates[0] : null;
   
   return (
     <div className="space-y-6">
@@ -52,12 +64,79 @@ const HomePage = () => {
         )}
       </div>
       
+      {/* 下一个训练提示 */}
+      {nextTrainingDay && (
+        <div className="card bg-primary bg-opacity-5">
+          <h2 className="font-semibold mb-2">下一个训练</h2>
+          <div className="flex justify-between">
+            <div>
+              <div className="font-medium">{nextTrainingDay.title}</div>
+              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                {nextTrainingDay.description}
+              </p>
+            </div>
+            <div className="flex flex-col items-end">
+              <div className="flex items-center">
+                <span className="text-xs bg-yellow-100 text-yellow-800 rounded-full px-2 py-0.5 flex items-center">
+                  <span>⭐</span>
+                  <span className="ml-1">{nextTrainingDay.starReward}</span>
+                </span>
+              </div>
+              <span className="text-xs text-gray-600 mt-1">
+                {nextTrainingDay.duration}分钟
+              </span>
+            </div>
+          </div>
+          
+          {nextTrainingDay.scheduledDate ? (
+            <div className="mt-3 flex justify-between items-center">
+              <div className="text-sm">
+                <span className="font-medium">已安排：</span>
+                <span>{new Date(nextTrainingDay.scheduledDate).toLocaleDateString('zh-CN', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric'
+                })}</span>
+              </div>
+              <Link 
+                to={`/training-day/${nextTrainingDay.id}`}
+                className="btn btn-primary btn-sm"
+              >
+                开始训练
+              </Link>
+            </div>
+          ) : nextTrainingDate ? (
+            <div className="mt-3">
+              <Link 
+                to="/training-plan"
+                className="btn btn-primary w-full"
+              >
+                安排在 {nextTrainingDate.toLocaleDateString('zh-CN', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <Link 
+                to="/training-plan"
+                className="btn btn-primary w-full"
+              >
+                安排训练
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+      
       {/* 快速操作区 */}
       <div className="grid grid-cols-2 gap-4">
-        <Link to="/training" className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 flex flex-col items-center justify-center text-center">
-          <div className="text-3xl mb-2">🏀</div>
-          <div className="font-bold">开始训练</div>
-          <div className="text-xs mt-1">提升你的篮球技能</div>
+        <Link to="/training-plan" className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 flex flex-col items-center justify-center text-center">
+          <div className="text-3xl mb-2">🏆</div>
+          <div className="font-bold">训练计划</div>
+          <div className="text-xs mt-1">按计划提升你的技能</div>
         </Link>
         
         <Link to="/rewards" className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 flex flex-col items-center justify-center text-center">
@@ -66,6 +145,36 @@ const HomePage = () => {
           <div className="text-xs mt-1">用星星兑换奖励</div>
         </Link>
       </div>
+      
+      {/* 训练计划进度 */}
+      {currentPlan && (
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">当前训练计划</h2>
+            <Link to="/training-plan" className="text-primary text-sm">
+              查看详情
+            </Link>
+          </div>
+          
+          <div>
+            <div className="font-medium">{currentPlan.levelName}</div>
+            <p className="text-sm text-gray-600 mt-1 mb-3">
+              {currentPlan.description}
+            </p>
+            
+            <div className="flex justify-between text-sm mb-1">
+              <span>总体进度</span>
+              <span>{trainingProgress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div 
+                className="bg-primary rounded-full h-2.5" 
+                style={{ width: `${trainingProgress}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* 技能进度概览 */}
       <div className="card">
@@ -99,6 +208,32 @@ const HomePage = () => {
               <div 
                 className="bg-primary rounded-full h-2" 
                 style={{ width: `${skillProgress.shooting}%` }}
+              ></div>
+            </div>
+          </div>
+          
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span>传球</span>
+              <span>{skillProgress.passing}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-primary rounded-full h-2" 
+                style={{ width: `${skillProgress.passing}%` }}
+              ></div>
+            </div>
+          </div>
+          
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span>移动</span>
+              <span>{skillProgress.movement}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-primary rounded-full h-2" 
+                style={{ width: `${skillProgress.movement}%` }}
               ></div>
             </div>
           </div>
@@ -152,59 +287,25 @@ const HomePage = () => {
             <div className="text-gray-600 text-sm">
               你还没有完成任何训练
             </div>
-            <Link to="/training" className="btn-primary text-sm mt-2 inline-block">
+            <Link to="/training-plan" className="btn-primary text-sm mt-2 inline-block">
               开始第一次训练
             </Link>
           </div>
         )}
       </div>
       
-      {/* 推荐训练 */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">推荐训练</h2>
-          <Link to="/training" className="text-primary text-sm">
-            查看全部
-          </Link>
-        </div>
-        
-        {recommendedTrainings.length > 0 ? (
-          <div className="space-y-3">
-            {recommendedTrainings.map(training => (
-              <Link 
-                key={training.id}
-                to={`/training/${training.id}`}
-                className="border rounded-lg p-3 block hover:border-primary hover:bg-primary hover:bg-opacity-5 transition-colors"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="font-semibold">{training.title}</div>
-                    <div className="flex items-center mt-1">
-                      <span className="text-xs bg-gray-200 rounded-full px-2 py-0.5 mr-2">
-                        {training.level === 1 ? '初级' : 
-                         training.level === 2 ? '中级' : 
-                         training.level === 3 ? '高级' : ''}
-                      </span>
-                      <span className="text-xs text-gray-600">
-                        {training.duration}分钟
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-gray-400">→</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center p-4">
-            <div className="text-gray-600 text-sm">
-              正在为你定制训练计划...
-            </div>
-          </div>
-        )}
+      {/* 自由训练入口 */}
+      <div className="card bg-gray-50">
+        <h2 className="font-semibold mb-3">自由训练</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          想要针对特定技能进行训练？尝试自由训练模式，按自己的节奏练习。
+        </p>
+        <Link to="/training" className="btn btn-outline w-full">
+          浏览所有训练项目
+        </Link>
       </div>
     </div>
   );
 };
 
-export default HomePage; 
+export default HomePage;

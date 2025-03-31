@@ -6,9 +6,9 @@ import VersionDisplay from './common/VersionDisplay';
 // 导航项配置
 const navItems = [
   { path: '/', label: '首页', icon: '🏠' },
+  { path: '/training-plan', label: '计划', icon: '🏆' },
   { path: '/training', label: '训练', icon: '🏀' },
   { path: '/progress', label: '进度', icon: '📊' },
-  { path: '/rewards', label: '奖励', icon: '🎁' },
   { path: '/profile', label: '我的', icon: '👤' }
 ];
 
@@ -86,7 +86,13 @@ const Layout = () => {
                 <Link 
                   to={item.path} 
                   className={`flex flex-col items-center justify-center py-2 
-                    ${location.pathname === item.path ? 'text-primary' : 'text-gray-600'}`}
+                    ${
+                      location.pathname === item.path || 
+                      (item.path === '/training-plan' && location.pathname.startsWith('/training-day')) ||
+                      (item.path === '/training' && location.pathname.startsWith('/training/'))
+                        ? 'text-primary' 
+                        : 'text-gray-600'
+                    }`}
                 >
                   <span className="text-xl mb-1">{item.icon}</span>
                   <span className="text-xs">{item.label}</span>
@@ -103,4 +109,4 @@ const Layout = () => {
   );
 };
 
-export default Layout; 
+export default Layout;

@@ -30,6 +30,8 @@ export const TrainingProvider = ({ children }) => {
   const [skillProgress, setSkillProgress] = useState(defaultSkillProgress);
   const [trainingHistory, setTrainingHistory] = useState([]);
   const [currentTraining, setCurrentTraining] = useState(null);
+  const [currentTrainingDay, setCurrentTrainingDay] = useState(null);
+  const [currentTrainingIndex, setCurrentTrainingIndex] = useState(0);
   
   // 首次加载时从localStorage获取训练数据
   useEffect(() => {
@@ -70,7 +72,9 @@ export const TrainingProvider = ({ children }) => {
     localStorage.setItem('bounceup_training_history', JSON.stringify(trainingHistory));
   }, [trainingHistory]);
   
-  // 开始训练
+  // ================= 原有训练系统功能 =================
+  
+  // 开始单个训练
   const startTraining = (trainingId) => {
     // 查找训练数据
     const training = findTrainingById(trainingId);
@@ -100,7 +104,7 @@ export const TrainingProvider = ({ children }) => {
     }));
   };
   
-  // 完成训练
+  // 完成单个训练
   const completeTraining = (score, feedback) => {
     if (!currentTraining) {
       throw new Error('没有正在进行的训练');
@@ -126,7 +130,8 @@ export const TrainingProvider = ({ children }) => {
       score,
       feedback,
       earnedStars,
-      date: trainingEndTime
+      date: trainingEndTime,
+      trainingDayId: currentTrainingDay?.id || null
     };
     
     // 更新训练历史
@@ -135,16 +140,113 @@ export const TrainingProvider = ({ children }) => {
     // 更新技能进度
     updateSkillProgress(currentTraining.category, score);
     
-    // 添加星星奖励
-    addStars(earnedStars);
+    // 如果不是训练计划模式，直接奖励星星
+    if (!currentTrainingDay) {
+      addStars(earnedStars);
+    }
     
-    // 重置当前训练
-    setCurrentTraining(null);
-    
-    return {
+    const result = {
       record: trainingRecord,
       earnedStars
     };
+    
+    // 如果是训练计划模式，检查是否完成了所有训练
+    if (currentTrainingDay) {
+      const nextIndex = currentTrainingIndex + 1;
+      
+      if (nextIndex < currentTrainingDay.trainings.length) {
+        // 还有下一个训练，加载它
+        setCurrentTrainingIndex(nextIndex);
+        const nextTrainingId = currentTrainingDay.trainings[nextIndex].moduleId;
+        const nextTraining = findTrainingById(nextTrainingId);
+        
+        setCurrentTraining({
+          ...nextTraining,
+          startTime: new Date().toISOString(),
+          progress: 0
+        });
+        
+        result.hasNextTraining = true;
+        result.nextTraining = nextTraining;
+      } else {
+        // 所有训练完成，重置当前训练
+        setCurrentTraining(null);
+        result.isTrainingDayCompleted = true;
+      }
+    } else {
+      // 非训练计划模式，重置当前训练
+      setCurrentTraining(null);
+    }
+    
+    return result;
+  };
+  
+  // 取消当前训练
+  const cancelTraining = () => {
+    setCurrentTraining(null);
+    setCurrentTrainingDay(null);
+    setCurrentTrainingIndex(0);
+  };
+  
+  // ================= 新增训练计划系统功能 =================
+  
+  // 开始训练日训练
+  const startTrainingDay = (trainingDay) => {
+    if (!trainingDay || !trainingDay.trainings || trainingDay.trainings.length === 0) {
+      throw new Error('训练日数据不完整或没有训练项目');
+    }
+    
+    // 设置当前训练日
+    setCurrentTrainingDay(trainingDay);
+    setCurrentTrainingIndex(0);
+    
+    // 加载第一个训练
+    const firstTrainingId = trainingDay.trainings[0].moduleId;
+    return startTraining(firstTrainingId);
+  };
+  
+  // 完成整个训练日
+  const completeTrainingDay = () => {
+    if (!currentTrainingDay) {
+      throw new Error('没有正在进行的训练日');
+    }
+    
+    // 计算训练日平均得分
+    const dayRecords = trainingHistory.filter(
+      record => record.trainingDayId === currentTrainingDay.id
+    );
+    
+    const totalScore = dayRecords.reduce((sum, record) => sum + record.score, 0);
+    const averageScore = dayRecords.length > 0 ? totalScore / dayRecords.length : 0;
+    
+    // 创建训练日记录（用于未来扩展）
+    const trainingDayRecord = {
+      id: `day_record_${Date.now()}`,
+      trainingDayId: currentTrainingDay.id,
+      title: currentTrainingDay.title,
+      completedDate: new Date().toISOString(),
+      averageScore,
+      trainingRecords: dayRecords.map(record => record.recordId)
+    };
+    
+    // 清除当前训练日状态
+    setCurrentTrainingDay(null);
+    setCurrentTrainingIndex(0);
+    
+    return {
+      trainingDayRecord,
+      averageScore
+    };
+  };
+  
+  // 直接向训练历史添加训练记录（用于外部调用）
+  const addTrainingToHistory = (trainingRecord) => {
+    setTrainingHistory(prev => [trainingRecord, ...prev]);
+    
+    // 如果有类别信息，更新技能进度
+    if (trainingRecord.category && trainingRecord.score !== undefined) {
+      updateSkillProgress(trainingRecord.category, trainingRecord.score);
+    }
   };
   
   // 更新技能进度
@@ -174,11 +276,6 @@ export const TrainingProvider = ({ children }) => {
     if (progress < 60) return '进阶';
     if (progress < 80) return '熟练';
     return '专家';
-  };
-  
-  // 取消当前训练
-  const cancelTraining = () => {
-    setCurrentTraining(null);
   };
   
   // 获取推荐训练
@@ -266,18 +363,29 @@ export const TrainingProvider = ({ children }) => {
     return shuffled.slice(0, count);
   };
   
+  // 获取近期训练历史
+  const getRecentTrainingHistory = (count = 5) => {
+    return trainingHistory.slice(0, count);
+  };
+  
   return (
     <TrainingContext.Provider
       value={{
         skillProgress,
         trainingHistory,
         currentTraining,
+        currentTrainingDay,
+        currentTrainingIndex,
         startTraining,
         updateTrainingProgress,
         completeTraining,
         cancelTraining,
+        startTrainingDay,
+        completeTrainingDay,
+        addTrainingToHistory,
         getSkillLevelDescription,
-        getRecommendedTrainings
+        getRecommendedTrainings,
+        getRecentTrainingHistory
       }}
     >
       {children}
