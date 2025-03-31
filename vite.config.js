@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -78,8 +79,22 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': '/src'
+      '@': resolve(__dirname, './src')
     }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html')
+      },
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'training-data': ['./src/data/allTrainings.js']
+        }
+      }
+    },
+    sourcemap: true
   },
   server: {
     port: 3002,
@@ -91,4 +106,4 @@ export default defineConfig({
       port: 3002
     }
   }
-}) 
+})

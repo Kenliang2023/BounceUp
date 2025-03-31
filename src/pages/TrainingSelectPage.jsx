@@ -6,7 +6,7 @@ import {
   passingTrainings, 
   movementTrainings,
   parentChildTrainings 
-} from '../data/training/index.js';
+} from '../data/allTrainings';
 
 const TrainingSelectPage = () => {
   const [debug, setDebug] = useState({

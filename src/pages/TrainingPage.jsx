@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTraining } from '../contexts/TrainingContext';
-import { findTrainingById } from '../data/training/index.js';
+import { findTrainingById } from '../data/allTrainings';
 
 const TrainingPage = () => {
   const { id } = useParams();

@@ -10,7 +10,7 @@ import {
   parentChildTrainings,
   findTrainingById,
   getAllTrainings
-} from '../data/training/index.js';
+} from '../data/allTrainings';
 
 // 创建上下文
 const TrainingContext = createContext(null);
