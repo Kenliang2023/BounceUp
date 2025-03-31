@@ -1,4 +1,34 @@
-import { useState, useEffect } from 'react';
+  const scrollToCategory = (categoryId) => {
+    let ref;
+    switch(categoryId) {
+      case 'dribbling':
+        ref = dribblingRef;
+        break;
+      case 'shooting':
+        ref = shootingRef;
+        break;
+      case 'passing':
+        ref = passingRef;
+        break;
+      case 'movement':
+        ref = movementRef;
+        break;
+      case 'parent_child':
+        ref = parentChildRef;
+        break;
+      default:
+        return;
+    }
+    
+    if (ref && ref.current) {
+      // 滚动到元素并增加一点偏移量，考虑到顶部导航栏
+      window.scrollTo({
+        top: ref.current.offsetTop - 70, // 减去导航栏高度和一点空间
+        behavior: 'smooth'
+      });
+    }
+  };
+  import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   dribblingTrainings, 
@@ -9,6 +39,13 @@ import {
 } from '../data/allTrainings';
 
 const TrainingSelectPage = () => {
+  // 创建引用用于滚动
+  const dribblingRef = useRef(null);
+  const shootingRef = useRef(null);
+  const passingRef = useRef(null);
+  const movementRef = useRef(null);
+  const parentChildRef = useRef(null);
+  
   const [debug, setDebug] = useState({
     dribbling: 0,
     shooting: 0,
@@ -34,6 +71,38 @@ const TrainingSelectPage = () => {
       parentChild: parentChildTrainings?.length || 0
     });
   }, []);
+
+  // 滚动到指定类别的函数
+  const scrollToCategory = (categoryId) => {
+    let ref;
+    switch(categoryId) {
+      case 'dribbling':
+        ref = dribblingRef;
+        break;
+      case 'shooting':
+        ref = shootingRef;
+        break;
+      case 'passing':
+        ref = passingRef;
+        break;
+      case 'movement':
+        ref = movementRef;
+        break;
+      case 'parent_child':
+        ref = parentChildRef;
+        break;
+      default:
+        return;
+    }
+    
+    if (ref && ref.current) {
+      // 滚动到元素并增加一点偏移量，考虑到顶部导航栏
+      window.scrollTo({
+        top: ref.current.offsetTop - 70, // 减去导航栏高度和一点空间
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // 将父子训练数据添加到相应类别中
   const allDribblingTrainings = dribblingTrainings && parentChildTrainings ? 
@@ -73,7 +142,8 @@ const TrainingSelectPage = () => {
         {categories.map((category) => (
           <div 
             key={category.id}
-            className={`card ${category.color} p-4 flex flex-col items-center justify-center`}
+            className={`card ${category.color} p-4 flex flex-col items-center justify-center cursor-pointer transform transition-transform hover:scale-105 active:scale-95`}
+            onClick={() => scrollToCategory(category.id)}
           >
             <div className="text-3xl mb-2">{category.emoji}</div>
             <div className="font-semibold">{category.name}</div>
@@ -82,12 +152,13 @@ const TrainingSelectPage = () => {
                 ? `${category.data.length} 个训练项目` 
                 : '即将推出'}
             </div>
+            <div className="text-xs text-primary mt-2">点击查看详情 →</div>
           </div>
         ))}
       </div>
       
       {/* 运球训练列表 */}
-      <div className="mt-8">
+      <div className="mt-8" ref={dribblingRef}>
         <h2 className="text-xl font-semibold mb-4">运球训练</h2>
         {Array.isArray(allDribblingTrainings) && allDribblingTrainings.length > 0 ? (
           <div className="space-y-4">
@@ -118,7 +189,7 @@ const TrainingSelectPage = () => {
       </div>
       
       {/* 投篮训练列表 */}
-      <div className="mt-8">
+      <div className="mt-8" ref={shootingRef}>
         <h2 className="text-xl font-semibold mb-4">投篮训练</h2>
         {Array.isArray(allShootingTrainings) && allShootingTrainings.length > 0 ? (
           <div className="space-y-4">
@@ -149,7 +220,7 @@ const TrainingSelectPage = () => {
       </div>
       
       {/* 传球训练列表 */}
-      <div className="mt-8">
+      <div className="mt-8" ref={passingRef}>
         <h2 className="text-xl font-semibold mb-4">传球训练</h2>
         {Array.isArray(passingTrainings) && passingTrainings.length > 0 ? (
           <div className="space-y-4">
@@ -180,7 +251,7 @@ const TrainingSelectPage = () => {
       </div>
       
       {/* 移动训练列表 */}
-      <div className="mt-8">
+      <div className="mt-8" ref={movementRef}>
         <h2 className="text-xl font-semibold mb-4">移动训练</h2>
         {Array.isArray(movementTrainings) && movementTrainings.length > 0 ? (
           <div className="space-y-4">
@@ -211,7 +282,7 @@ const TrainingSelectPage = () => {
       </div>
       
       {/* 父子训练手册 */}
-      <div className="mt-8">
+      <div className="mt-8" ref={parentChildRef}>
         <h2 className="text-xl font-semibold mb-4">父子训练手册</h2>
         {Array.isArray(parentChildTrainings) && parentChildTrainings.length > 0 ? (
           <div className="space-y-4">
