@@ -9,14 +9,9 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/android-chrome-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/icons/favicon.svg",
+      "sizes": "48x48 72x72 96x96 128x128 256x256 512x512",
+      "type": "image/svg+xml"
     },
     {
       "src": "/icons/apple-touch-icon.png",
@@ -24,44 +19,29 @@
       "type": "image/png"
     },
     {
-      "src": "/icons/maskable-icon.png",
+      "src": "/icons/safari-pinned-tab.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/homepage.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "platform": "narrow",
-      "label": "主页界面"
-    },
-    {
-      "src": "/screenshots/training.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "platform": "narrow",
-      "label": "训练界面"
-    }
-  ],
+  "screenshots": [],
   "shortcuts": [
     {
       "name": "快速训练",
       "short_name": "训练",
       "description": "开始今日训练",
       "url": "/training/select",
-      "icons": [{ "src": "/icons/shortcut-training.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/favicon.svg", "sizes": "96x96" }]
     },
     {
       "name": "查看进度",
       "short_name": "进度",
       "description": "查看训练进度",
       "url": "/progress",
-      "icons": [{ "src": "/icons/shortcut-progress.png", "sizes": "96x96" }]
+      "icons": [{ "src": "/icons/favicon.svg", "sizes": "96x96" }]
     }
   ],
   "categories": ["fitness", "education", "sports"],
   "prefer_related_applications": false
-} 
+}

@@ -12,13 +12,11 @@ export const clearAppCache = async () => {
     if ('caches' in window) {
       const cacheNames = await caches.keys();
       const bounceupCaches = cacheNames.filter(name => name.includes('bounceup'));
-      
+
       // 删除所有 bounceup 相关缓存
-      await Promise.all(
-        bounceupCaches.map(cacheName => caches.delete(cacheName))
-      );
+      await Promise.all(bounceupCaches.map(cacheName => caches.delete(cacheName)));
     }
-    
+
     // 清除 localStorage
     for (let key in localStorage) {
       if (key.startsWith('bounceup-')) {
@@ -28,7 +26,7 @@ export const clearAppCache = async () => {
 
     // 清除 IndexedDB 存储
     await clearIndexedDB();
-    
+
     return true;
   } catch (error) {
     console.error('清除缓存失败:', error);
@@ -46,26 +44,26 @@ const clearIndexedDB = () => {
       resolve();
       return;
     }
-    
+
     // 获取所有数据库
     const request = window.indexedDB.databases();
-    
-    request.onsuccess = (event) => {
+
+    request.onsuccess = event => {
       const databases = event.target.result || [];
-      
+
       if (databases.length === 0) {
         resolve();
         return;
       }
-      
+
       let completed = 0;
       let errors = 0;
-      
+
       // 对每个数据库执行删除操作
       databases.forEach(db => {
         try {
           const deleteRequest = window.indexedDB.deleteDatabase(db.name);
-          
+
           deleteRequest.onsuccess = () => {
             completed++;
             if (completed + errors === databases.length) {
@@ -76,7 +74,7 @@ const clearIndexedDB = () => {
               }
             }
           };
-          
+
           deleteRequest.onerror = () => {
             errors++;
             if (completed + errors === databases.length) {
@@ -91,8 +89,8 @@ const clearIndexedDB = () => {
         }
       });
     };
-    
-    request.onerror = (event) => {
+
+    request.onerror = event => {
       reject(new Error('获取数据库列表失败'));
     };
   });
@@ -252,7 +250,7 @@ export const createCacheCleanerPage = () => {
     </body>
     </html>
   `;
-  
+
   // 在新窗口打开清理页面
   const cleanerWindow = window.open('', '_blank');
   if (cleanerWindow) {
@@ -260,7 +258,7 @@ export const createCacheCleanerPage = () => {
     cleanerWindow.document.close();
     return true;
   }
-  
+
   // 如果无法打开新窗口，返回 false
   return false;
 };

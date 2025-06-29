@@ -1,9 +1,9 @@
 // 训练计划生成器
-import { 
-  generateTrainingPlan, 
+import {
+  generateTrainingPlan,
   recommendTrainingTemplate,
   generateFocusedTraining,
-  TEMPLATE_TYPES
+  TEMPLATE_TYPES,
 } from '../data/trainingTemplates';
 import { getCurrentLevelByStars } from '../data/trainingPlan';
 
@@ -16,7 +16,7 @@ import { getCurrentLevelByStars } from '../data/trainingPlan';
  */
 export const generateAutomaticTrainingPlan = (user, preferences = {}, daysAhead = 14) => {
   if (!user) return null;
-  
+
   // 构建用户档案
   const userProfile = {
     level: user.level || 1,
@@ -26,18 +26,18 @@ export const generateAutomaticTrainingPlan = (user, preferences = {}, daysAhead 
       dribbling: 1,
       shooting: 1,
       passing: 1,
-      movement: 1
+      movement: 1,
     },
-    interests: user.interests || []
+    interests: user.interests || [],
   };
-  
+
   // 获取当前等级
   const currentLevel = getCurrentLevelByStars(user.totalStars || 0);
   userProfile.level = currentLevel.id;
-  
+
   // 推荐最适合的训练模板
   const templateType = recommendTrainingTemplate(userProfile, preferences);
-  
+
   // 生成训练计划
   return generateTrainingPlan(templateType, userProfile, preferences, daysAhead);
 };
@@ -51,43 +51,41 @@ export const generateAutomaticTrainingPlan = (user, preferences = {}, daysAhead 
  */
 export const generateWeaknessTrainingPlan = (user, preferences = {}, daysAhead = 14) => {
   if (!user || !user.skillLevels) return null;
-  
+
   // 找出最弱的技能
   const skillLevels = user.skillLevels;
   let weakestSkill = null;
   let lowestLevel = Infinity;
-  
+
   Object.entries(skillLevels).forEach(([skill, level]) => {
     if (level < lowestLevel) {
       lowestLevel = level;
       weakestSkill = skill;
     }
   });
-  
+
   // 如果找不到明显的弱项，使用平衡模板
-  const templateType = weakestSkill ? 
-    getTemplateForSkill(weakestSkill) : 
-    TEMPLATE_TYPES.BALANCED;
-  
+  const templateType = weakestSkill ? getTemplateForSkill(weakestSkill) : TEMPLATE_TYPES.BALANCED;
+
   // 构建用户档案
   const userProfile = {
     level: user.level || 1,
     age: user.age || 8,
     totalStars: user.totalStars || 0,
     skillLevels,
-    interests: user.interests || []
+    interests: user.interests || [],
   };
-  
+
   // 获取当前等级
   const currentLevel = getCurrentLevelByStars(user.totalStars || 0);
   userProfile.level = currentLevel.id;
-  
+
   // 在偏好中强制设置关注领域为弱项技能
   const enhancedPreferences = {
     ...preferences,
-    focusAreas: [weakestSkill]
+    focusAreas: [weakestSkill],
   };
-  
+
   // 生成训练计划
   return generateTrainingPlan(templateType, userProfile, enhancedPreferences, daysAhead);
 };
@@ -97,7 +95,7 @@ export const generateWeaknessTrainingPlan = (user, preferences = {}, daysAhead =
  * @param {string} skill - 技能类型
  * @returns {string} 训练模板类型
  */
-const getTemplateForSkill = (skill) => {
+const getTemplateForSkill = skill => {
   switch (skill) {
     case 'dribbling':
       return TEMPLATE_TYPES.DRIBBLING_FOCUS;
@@ -120,30 +118,30 @@ const getTemplateForSkill = (skill) => {
  */
 export const generateTodayRecommendedTraining = (user, duration = 20) => {
   if (!user) return null;
-  
+
   // 获取当前等级
   const currentLevel = getCurrentLevelByStars(user.totalStars || 0);
   const level = currentLevel.id;
-  
+
   // 如果有技能数据，则为最弱技能生成专项训练
   if (user.skillLevels) {
     // 找出最弱的技能
     const skillLevels = user.skillLevels;
     let weakestSkill = null;
     let lowestLevel = Infinity;
-    
+
     Object.entries(skillLevels).forEach(([skill, level]) => {
       if (level < lowestLevel) {
         lowestLevel = level;
         weakestSkill = skill;
       }
     });
-    
+
     if (weakestSkill) {
       return generateFocusedTraining(weakestSkill, duration, level);
     }
   }
-  
+
   // 默认生成平衡的训练
   return generateFocusedTraining('balanced', duration, level);
 };
@@ -157,9 +155,9 @@ export const generateTodayRecommendedTraining = (user, duration = 20) => {
 export const generateWeeklyRecommendation = (user, preferences = {}) => {
   // 获取完整的训练计划
   const plan = generateAutomaticTrainingPlan(user, preferences, 7);
-  
+
   if (!plan) return [];
-  
+
   // 返回训练日列表
   return plan.trainingDays;
 };
@@ -168,5 +166,5 @@ export default {
   generateAutomaticTrainingPlan,
   generateWeaknessTrainingPlan,
   generateTodayRecommendedTraining,
-  generateWeeklyRecommendation
+  generateWeeklyRecommendation,
 };

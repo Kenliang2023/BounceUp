@@ -11,7 +11,7 @@ import { setCacheNameDetails } from 'workbox-core';
 // 使用应用版本号作为缓存名称的一部分
 setCacheNameDetails({
   prefix: 'bounceup',
-  suffix: 'v0.1.1'
+  suffix: 'v0.1.1',
 });
 
 // 声明客户端控制权
@@ -32,9 +32,9 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 10,
-        maxAgeSeconds: 60 * 60 * 24 // 1 天
-      })
-    ]
+        maxAgeSeconds: 60 * 60 * 24, // 1 天
+      }),
+    ],
   })
 );
 
@@ -46,26 +46,26 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 50,
-        maxAgeSeconds: 60 * 60 // 1 小时
-      })
-    ]
+        maxAgeSeconds: 60 * 60, // 1 小时
+      }),
+    ],
   })
 );
 
 // 静态资源策略 - 优先使用缓存，同时在后台更新
 registerRoute(
-  ({ request }) => 
-    request.destination === 'style' || 
-    request.destination === 'script' || 
+  ({ request }) =>
+    request.destination === 'style' ||
+    request.destination === 'script' ||
     request.destination === 'image',
   new StaleWhileRevalidate({
     cacheName: 'bounceup-static-cache-v0.1.1',
     plugins: [
       new ExpirationPlugin({
         maxEntries: 100,
-        maxAgeSeconds: 60 * 60 * 24 * 30 // 30 天
-      })
-    ]
+        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 天
+      }),
+    ],
   })
 );
 
@@ -77,26 +77,26 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 20,
-        maxAgeSeconds: 60 * 60 * 24 * 365 // 1 年
-      })
-    ]
+        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 年
+      }),
+    ],
   })
 );
 
 // 监听 SKIP_WAITING 消息
-self.addEventListener('message', (event) => {
+self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
 // Service Worker 激活时触发客户端更新
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
     self.clients.claim().then(() => {
       // 向所有客户端广播更新消息
-      self.clients.matchAll().then((clients) => {
-        clients.forEach((client) => {
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
           client.postMessage({ type: 'SW_ACTIVATED' });
         });
       });

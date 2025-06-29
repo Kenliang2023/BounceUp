@@ -9,12 +9,14 @@ export const checkForAppUpdate = async () => {
     // 当前应用版本（从 meta 标签获取）
     const currentVersionMeta = document.querySelector('meta[name="version"]');
     const currentVersion = currentVersionMeta ? currentVersionMeta.content : '0.0.0';
-    
+
     // 创建一个自定义事件来触发更新检查
     // 实际使用时，可以添加从服务器检查版本的逻辑
-    window.dispatchEvent(new CustomEvent('sw-update-check', { 
-      detail: { currentVersion } 
-    }));
+    window.dispatchEvent(
+      new CustomEvent('sw-update-check', {
+        detail: { currentVersion },
+      })
+    );
 
     // 如果有 Service Worker 注册
     if ('serviceWorker' in navigator) {
@@ -27,11 +29,11 @@ export const checkForAppUpdate = async () => {
           window.dispatchEvent(new CustomEvent('sw-update-found'));
           return true;
         }
-        
+
         // 监听更新
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
-          
+
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               console.log('新版本已下载，等待安装');
@@ -39,14 +41,14 @@ export const checkForAppUpdate = async () => {
             }
           });
         });
-        
+
         // 每次页面加载时检查更新
         registration.update().catch(err => {
           console.error('检查更新失败:', err);
         });
       }
     }
-    
+
     return false;
   } catch (error) {
     console.error('版本检查错误:', error);
@@ -61,7 +63,6 @@ export const clearCacheAndReload = async () => {
   try {
     // 跳转到专用的缓存清理页面
     window.location.href = '/clear-cache.html';
-    
   } catch (error) {
     console.error('清除缓存失败:', error);
     // 如果出错，尝试直接刷新

@@ -8,81 +8,90 @@ import { useReward } from '../../contexts/RewardContext';
 const RedemptionHistory = ({ onClose }) => {
   const { redeemedRewards } = useReward();
   const [filter, setFilter] = useState('all'); // 'all', 'week', 'month'
-  
+
   // 根据筛选条件过滤记录
   const getFilteredRedemptions = () => {
     if (filter === 'all') {
       return redeemedRewards;
     }
-    
+
     const now = new Date();
     const filterDate = new Date();
-    
+
     if (filter === 'week') {
       filterDate.setDate(now.getDate() - 7);
     } else if (filter === 'month') {
       filterDate.setMonth(now.getMonth() - 1);
     }
-    
+
     return redeemedRewards.filter(redemption => {
       const redemptionDate = new Date(redemption.date);
       return redemptionDate >= filterDate;
     });
   };
-  
+
   // 按月份对历史记录进行分组
   const groupedRedemptions = () => {
     const filtered = getFilteredRedemptions();
     const grouped = {};
-    
+
     filtered.forEach(redemption => {
       const date = new Date(redemption.date);
       const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-      
+
       if (!grouped[monthKey]) {
         grouped[monthKey] = {
           month: new Date(date.getFullYear(), date.getMonth(), 1),
-          items: []
+          items: [],
         };
       }
-      
+
       grouped[monthKey].items.push(redemption);
     });
-    
+
     // 转换为数组并按月份排序
     return Object.values(grouped).sort((a, b) => b.month - a.month);
   };
-  
+
   // 计算统计数据
   const getStatistics = () => {
     const filtered = getFilteredRedemptions();
-    
+
     return {
       totalRedemptions: filtered.length,
       totalStars: filtered.reduce((sum, r) => sum + r.cost, 0),
-      averageCost: filtered.length > 0 
-        ? Math.round(filtered.reduce((sum, r) => sum + r.cost, 0) / filtered.length) 
-        : 0
+      averageCost:
+        filtered.length > 0
+          ? Math.round(filtered.reduce((sum, r) => sum + r.cost, 0) / filtered.length)
+          : 0,
     };
   };
-  
+
   const stats = getStatistics();
   const groups = groupedRedemptions();
-  
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-5 max-w-lg w-full mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">兑换历史记录</h2>
-        <button 
-          onClick={onClose}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
-      
+
       {/* 统计数据 */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="bg-blue-50 rounded-lg p-3 text-center">
@@ -98,10 +107,10 @@ const RedemptionHistory = ({ onClose }) => {
           <div className="text-lg font-bold text-green-700">{stats.averageCost}</div>
         </div>
       </div>
-      
+
       {/* 筛选条件 */}
       <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
-        <button 
+        <button
           onClick={() => setFilter('all')}
           className={`flex-1 py-1 text-sm text-center rounded ${
             filter === 'all' ? 'bg-white shadow' : 'hover:bg-gray-200'
@@ -109,7 +118,7 @@ const RedemptionHistory = ({ onClose }) => {
         >
           全部
         </button>
-        <button 
+        <button
           onClick={() => setFilter('month')}
           className={`flex-1 py-1 text-sm text-center rounded ${
             filter === 'month' ? 'bg-white shadow' : 'hover:bg-gray-200'
@@ -117,7 +126,7 @@ const RedemptionHistory = ({ onClose }) => {
         >
           最近一个月
         </button>
-        <button 
+        <button
           onClick={() => setFilter('week')}
           className={`flex-1 py-1 text-sm text-center rounded ${
             filter === 'week' ? 'bg-white shadow' : 'hover:bg-gray-200'
@@ -126,7 +135,7 @@ const RedemptionHistory = ({ onClose }) => {
           最近一周
         </button>
       </div>
-      
+
       {/* 历史记录列表 */}
       <div className="max-h-96 overflow-y-auto">
         {groups.length > 0 ? (
@@ -135,12 +144,12 @@ const RedemptionHistory = ({ onClose }) => {
               <div className="text-sm font-medium text-gray-500 mb-2">
                 {group.month.toLocaleDateString('zh-CN', {
                   year: 'numeric',
-                  month: 'long'
+                  month: 'long',
                 })}
               </div>
-              
+
               <div className="space-y-2">
-                {group.items.map((redemption) => (
+                {group.items.map(redemption => (
                   <div key={redemption.id} className="p-3 border rounded-lg">
                     <div className="flex justify-between items-start">
                       <div>
@@ -149,7 +158,7 @@ const RedemptionHistory = ({ onClose }) => {
                           {new Date(redemption.date).toLocaleDateString('zh-CN', {
                             year: 'numeric',
                             month: 'long',
-                            day: 'numeric'
+                            day: 'numeric',
                           })}
                         </div>
                       </div>
@@ -170,12 +179,9 @@ const RedemptionHistory = ({ onClose }) => {
           </div>
         )}
       </div>
-      
+
       <div className="text-center mt-6">
-        <button 
-          onClick={onClose}
-          className="px-6 py-2 bg-primary text-white rounded-lg"
-        >
+        <button onClick={onClose} className="px-6 py-2 bg-primary text-white rounded-lg">
           关闭
         </button>
       </div>

@@ -6,83 +6,83 @@ import { weekDayNames } from '../../data/trainingPlan';
 const TrainingCalendar = () => {
   const navigate = useNavigate();
   const { trainingDays, getAllTrainingDays } = useTrainingPlan();
-  
+
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
-  
+
   // 生成当月的日历数据
   useEffect(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-    
+
     // 当月第一天是星期几
     const firstDayOfMonth = new Date(year, month, 1).getDay();
-    
+
     // 当月的天数
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
+
     // 上个月的天数
     const daysInPrevMonth = new Date(year, month, 0).getDate();
-    
+
     const days = [];
-    
+
     // 上个月的日期（填充前面的空格）
     for (let i = firstDayOfMonth - 1; i >= 0; i--) {
       const prevDate = new Date(year, month - 1, daysInPrevMonth - i);
       // 查找前一个月相应日期的训练
       const dayTrainings = findTrainingsForDate(prevDate);
-      
+
       days.push({
         date: prevDate,
         isCurrentMonth: false,
-        trainings: dayTrainings
+        trainings: dayTrainings,
       });
     }
-    
+
     // 当月的日期
     for (let i = 1; i <= daysInMonth; i++) {
       const date = new Date(year, month, i);
       // 查找当月相应日期的训练
       const dayTrainings = findTrainingsForDate(date);
-      
+
       days.push({
         date,
         isCurrentMonth: true,
         isToday: new Date().toDateString() === date.toDateString(),
-        trainings: dayTrainings
+        trainings: dayTrainings,
       });
     }
-    
+
     // 下个月的日期（填充后面的空格，确保总行数为6）
     const remainingDays = 42 - days.length;
     for (let i = 1; i <= remainingDays; i++) {
       const nextDate = new Date(year, month + 1, i);
       // 查找下个月相应日期的训练
       const dayTrainings = findTrainingsForDate(nextDate);
-      
+
       days.push({
         date: nextDate,
         isCurrentMonth: false,
-        trainings: dayTrainings
+        trainings: dayTrainings,
       });
     }
-    
+
     setCalendarDays(days);
   }, [currentMonth, getAllTrainingDays]);
-  
+
   // 辅助函数：为特定日期查找训练
-  const findTrainingsForDate = (date) => {
+  const findTrainingsForDate = date => {
     const allTrainingDays = getAllTrainingDays();
     if (!allTrainingDays || !allTrainingDays.length) return [];
-    
+
     const dateWithoutTime = new Date(date);
     dateWithoutTime.setHours(0, 0, 0, 0);
     const dateStr = dateWithoutTime.toISOString().split('T')[0]; // 格式化为 YYYY-MM-DD
-    
+
     const filteredTrainings = allTrainingDays.filter(day => {
       if (!day.scheduledDate) return false;
-      
+
       // 确保scheduledDate是Date对象
       let scheduledDate;
       if (typeof day.scheduledDate === 'string') {
@@ -90,16 +90,16 @@ const TrainingCalendar = () => {
       } else {
         scheduledDate = new Date(day.scheduledDate);
       }
-      
+
       scheduledDate.setHours(0, 0, 0, 0);
       const scheduledDateStr = scheduledDate.toISOString().split('T')[0];
-      
+
       return scheduledDateStr === dateStr;
     });
-    
+
     return filteredTrainings;
   };
-  
+
   // 切换到上个月
   const goToPrevMonth = () => {
     setCurrentMonth(prevMonth => {
@@ -108,7 +108,7 @@ const TrainingCalendar = () => {
       return new Date(year, month - 1, 1);
     });
   };
-  
+
   // 切换到下个月
   const goToNextMonth = () => {
     setCurrentMonth(prevMonth => {
@@ -117,40 +117,40 @@ const TrainingCalendar = () => {
       return new Date(year, month + 1, 1);
     });
   };
-  
+
   // 切换到今天所在的月份
   const goToToday = () => {
     setCurrentMonth(new Date());
   };
-  
+
   // 查看某一天的训练
-  const viewDayTrainings = (day) => {
+  const viewDayTrainings = day => {
     if (day.trainings.length > 0) {
       setSelectedDay(day);
     }
   };
-  
+
   // 关闭日期详情
   const closeDetailView = () => {
     setSelectedDay(null);
   };
-  
+
   // 点击训练项目
-  const handleTrainingClick = (trainingId) => {
+  const handleTrainingClick = trainingId => {
     navigate(`/training-day/${trainingId}`);
     closeDetailView();
   };
-  
+
   // 格式化日期
-  const formatDate = (date) => {
+  const formatDate = date => {
     return date.toLocaleDateString('zh-CN', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      weekday: 'long'
+      weekday: 'long',
     });
   };
-  
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       {/* 日历头部 */}
@@ -159,54 +159,68 @@ const TrainingCalendar = () => {
           {currentMonth.toLocaleString('zh-CN', { year: 'numeric', month: 'long' })}
         </h2>
         <div className="flex space-x-2">
-          <button 
+          <button
             onClick={goToPrevMonth}
             className="p-2 rounded-full hover:bg-gray-100"
             aria-label="上个月"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
-          <button 
+          <button
             onClick={goToToday}
             className="px-3 py-1 rounded bg-primary text-white text-sm font-medium"
             aria-label="今天"
           >
             今天
           </button>
-          <button 
+          <button
             onClick={goToNextMonth}
             className="p-2 rounded-full hover:bg-gray-100"
             aria-label="下个月"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
-      
+
       {/* 星期标题 */}
       <div className="grid grid-cols-7 bg-gray-50">
         {weekDayNames.map((day, index) => (
-          <div 
-            key={index}
-            className="text-center py-2 font-medium text-gray-600"
-          >
+          <div key={index} className="text-center py-2 font-medium text-gray-600">
             {day}
           </div>
         ))}
       </div>
-      
+
       {/* 日历格子 - 减少行距，优化显示效果 */}
       <div className="grid grid-cols-7 auto-rows-auto">
         {calendarDays.map((day, index) => {
           // 确保日期格式化为ISO字符串，便于调试
           const dayISODate = day.date.toISOString().split('T')[0];
-          
+
           return (
-            <div 
+            <div
               key={index}
               onClick={() => day.trainings.length > 0 && viewDayTrainings(day)}
               className={`
@@ -221,25 +235,31 @@ const TrainingCalendar = () => {
             >
               <div className="flex flex-col h-full">
                 {/* 日期显示 */}
-                <div className={`
+                <div
+                  className={`
                   text-right font-medium text-sm
                   ${day.isToday ? 'text-blue-600' : ''}
-                `}>
+                `}
+                >
                   {day.date.getDate()}
                 </div>
-                
+
                 {/* 训练指示器，简化显示方式 */}
                 {day.trainings.length > 0 && (
                   <div className="mt-1 flex justify-end">
-                    <div className={`
+                    <div
+                      className={`
                       flex items-center justify-center 
                       w-6 h-6 rounded-full
-                      ${day.trainings.some(t => t.isCompleted) 
-                        ? 'bg-green-500 text-white' 
-                        : day.trainings.some(t => t.isCustom)
-                          ? 'bg-purple-500 text-white'
-                          : 'bg-primary text-white'}
-                    `}>
+                      ${
+                        day.trainings.some(t => t.isCompleted)
+                          ? 'bg-green-500 text-white'
+                          : day.trainings.some(t => t.isCustom)
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-primary text-white'
+                      }
+                    `}
+                    >
                       {day.trainings.length}
                     </div>
                   </div>
@@ -249,7 +269,7 @@ const TrainingCalendar = () => {
           );
         })}
       </div>
-      
+
       {/* 图例说明 - 修复重复图例问题 */}
       <div className="flex justify-center p-3 bg-gray-50 border-t text-sm">
         <div className="flex items-center mr-4">
@@ -265,46 +285,52 @@ const TrainingCalendar = () => {
           <span>自定义</span>
         </div>
       </div>
-      
+
       {/* 选中日期的详情弹窗 */}
       {selectedDay && selectedDay.trainings.length > 0 && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-5 max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
-                {formatDate(selectedDay.date)}
-              </h3>
-              <button 
-                onClick={closeDetailView}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <h3 className="text-lg font-semibold">{formatDate(selectedDay.date)}</h3>
+              <button onClick={closeDetailView} className="text-gray-400 hover:text-gray-600">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            
+
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {selectedDay.trainings.map(training => (
-                <div 
+                <div
                   key={training.id}
                   onClick={() => handleTrainingClick(training.id)}
                   className={`
                     border rounded-lg p-3 cursor-pointer 
                     hover:border-primary transition-colors
-                    ${training.isCompleted 
-                      ? 'border-l-4 border-l-green-500' 
-                      : training.isCustom 
-                        ? 'border-l-4 border-l-purple-500' 
-                        : 'border-l-4 border-l-primary'}
+                    ${
+                      training.isCompleted
+                        ? 'border-l-4 border-l-green-500'
+                        : training.isCustom
+                          ? 'border-l-4 border-l-purple-500'
+                          : 'border-l-4 border-l-primary'
+                    }
                   `}
                 >
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-medium">{training.title}</div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {training.description}
-                      </p>
+                      <p className="text-sm text-gray-600 mt-1">{training.description}</p>
                     </div>
                     <div className="flex flex-col items-end">
                       <div className="flex items-center text-sm">
@@ -312,32 +338,29 @@ const TrainingCalendar = () => {
                           ⭐ {training.starReward}
                         </span>
                       </div>
-                      <span className="text-xs text-gray-500 mt-1">
-                        {training.duration}分钟
-                      </span>
+                      <span className="text-xs text-gray-500 mt-1">{training.duration}分钟</span>
                     </div>
                   </div>
-                  
+
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-xs text-gray-500">
                       {training.isCustom ? '自定义训练' : '标准训练'}
                     </span>
-                    <span className={`
+                    <span
+                      className={`
                       text-sm font-medium
                       ${training.isCompleted ? 'text-green-600' : training.isCustom ? 'text-purple-600' : 'text-primary'}
-                    `}>
+                    `}
+                    >
                       {training.isCompleted ? '已完成 ✓' : '开始训练 →'}
                     </span>
                   </div>
                 </div>
               ))}
             </div>
-            
+
             <div className="mt-4 flex justify-end">
-              <button 
-                onClick={closeDetailView}
-                className="btn btn-primary"
-              >
+              <button onClick={closeDetailView} className="btn btn-primary">
                 关闭
               </button>
             </div>

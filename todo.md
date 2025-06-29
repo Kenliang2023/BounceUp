@@ -10,6 +10,9 @@ BounceUp 是一个专为8岁男孩设计的篮球训练 PWA 应用，已完成�
 
 - [x] Git 仓库清理 - 修复 node_modules 跟踪问题 (2025-06-29)
 - [x] 创建 todo.md 文件 - 建立项目进度跟踪机制 (2025-06-29)
+- [x] 配置代码质量工具 - ESLint + Prettier + Husky (2025-06-29)
+- [x] 修复版本号管理 - 更新到 1.0.0 并创建 CHANGELOG.md (2025-06-29)
+- [x] 配置生产环境优化 - 自动移除 console.log (2025-06-29)
 
 ## 🔄 进行中
 
@@ -17,24 +20,7 @@ BounceUp 是一个专为8岁男孩设计的篮球训练 PWA 应用，已完成�
 
 ## 📌 待办事项
 
-### 高优先级
-
-- [ ] 配置代码质量工具 - ESLint + Prettier + Husky
-  - 安装必要的依赖包
-  - 创建 .eslintrc.js 配置文件
-  - 创建 .prettierrc 配置文件
-  - 配置 Husky pre-commit hooks
-
-- [ ] 修复版本号管理 - 更新到合理版本并创建 CHANGELOG
-  - 更新 package.json 版本到 1.0.0
-  - 创建 CHANGELOG.md 文件
-  - 记录历史版本变更
-
 ### 中优先级
-
-- [ ] 配置生产环境优化 - 自动移除 console.log
-  - 在 vite.config.js 中配置 terser 插件
-  - 设置生产环境移除 console 语句
 
 - [ ] 搭建测试框架 - 配置 Vitest 并编写首批测试
   - 安装 Vitest 和相关依赖

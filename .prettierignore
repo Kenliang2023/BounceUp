@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Production
+dist/
+build/
+
+# Misc
+.git/
+.vscode/
+coverage/
+*.log
+
+# Generated files
+package-lock.json
+CHANGELOG.md

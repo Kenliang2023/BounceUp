@@ -1,26 +1,26 @@
 // 训练模板 - 用于自动生成适合不同用户的训练计划
-import { 
-  dribblingTrainings, 
-  shootingTrainings, 
-  passingTrainings, 
+import {
+  dribblingTrainings,
+  shootingTrainings,
+  passingTrainings,
   movementTrainings,
-  parentChildTrainings
+  parentChildTrainings,
 } from './allTrainings';
 import { generateTrainingDayByDuration } from './trainingPlan';
 
 // 训练计划模板类型
 const TEMPLATE_TYPES = {
-  BEGINNER: 'beginner',          // 初学者
-  INTERMEDIATE: 'intermediate',  // 中级
-  ADVANCED: 'advanced',          // 高级
-  DRIBBLING_FOCUS: 'dribbling_focus',  // 运球专注
-  SHOOTING_FOCUS: 'shooting_focus',    // 投篮专注
-  PASSING_FOCUS: 'passing_focus',      // 传球专注
-  MOVEMENT_FOCUS: 'movement_focus',    // 移动专注
-  PARENT_CHILD: 'parent_child',  // 父子互动专注
-  BALANCED: 'balanced',          // 平衡全面
-  QUICK: 'quick',                // 快速训练
-  INTENSIVE: 'intensive'         // 强化训练
+  BEGINNER: 'beginner', // 初学者
+  INTERMEDIATE: 'intermediate', // 中级
+  ADVANCED: 'advanced', // 高级
+  DRIBBLING_FOCUS: 'dribbling_focus', // 运球专注
+  SHOOTING_FOCUS: 'shooting_focus', // 投篮专注
+  PASSING_FOCUS: 'passing_focus', // 传球专注
+  MOVEMENT_FOCUS: 'movement_focus', // 移动专注
+  PARENT_CHILD: 'parent_child', // 父子互动专注
+  BALANCED: 'balanced', // 平衡全面
+  QUICK: 'quick', // 快速训练
+  INTENSIVE: 'intensive', // 强化训练
 };
 
 // 可用训练频率选项
@@ -31,7 +31,7 @@ const FREQUENCY_OPTIONS = [
   { value: 4, label: '每周4次', description: '适合热爱篮球且有较多空闲时间的儿童' },
   { value: 5, label: '每周5次', description: '强化训练频率，适合有明确目标的儿童' },
   { value: 6, label: '每周6次', description: '准专业训练频率，需要高度投入' },
-  { value: 7, label: '每天训练', description: '最密集的训练安排，需要充分的时间保障' }
+  { value: 7, label: '每天训练', description: '最密集的训练安排，需要充分的时间保障' },
 ];
 
 // 训练时长选项 (分钟)
@@ -41,7 +41,7 @@ const DURATION_OPTIONS = [
   { value: 20, label: '20分钟', description: '标准训练，平衡训练效果和注意力' },
   { value: 30, label: '30分钟', description: '完整训练，全面提升技能' },
   { value: 45, label: '45分钟', description: '延长训练，适合状态良好时' },
-  { value: 60, label: '60分钟', description: '完整训练课，需要中间休息' }
+  { value: 60, label: '60分钟', description: '完整训练课，需要中间休息' },
 ];
 
 // 根据不同的用户特征和需求创建不同的训练计划模板
@@ -54,32 +54,30 @@ const trainingTemplates = {
     recommendedDuration: 15,
     difficultyLevel: 1,
     focusAreas: ['dribbling', 'parent_child'],
-    getTrainings: (level) => {
+    getTrainings: level => {
       return {
         // 周一 - 父子互动
         1: {
           trainings: [parentChildTrainings.find(t => t.moduleId === 'parent_child_day1')],
           title: '父子互动训练 - 控球与协调',
-          description: '控球基础训练，由父亲引导完成，培养兴趣和基本技能'
+          description: '控球基础训练，由父亲引导完成，培养兴趣和基本技能',
         },
         // 周三 - 基础运球
         3: {
           trainings: [dribblingTrainings.find(t => t.moduleId === 'dribbling_1')],
           title: '基础运球技能',
-          description: '巩固基础运球能力，提升手感和控球技巧'
+          description: '巩固基础运球能力，提升手感和控球技巧',
         },
         // 周六 - 父子互动 + 简单投篮
         6: {
-          trainings: [
-            parentChildTrainings.find(t => t.moduleId === 'parent_child_day3'),
-          ],
+          trainings: [parentChildTrainings.find(t => t.moduleId === 'parent_child_day3')],
           title: '父子互动 - 上篮入门',
-          description: '学习上篮基本步伐，培养球感和节奏感'
-        }
+          description: '学习上篮基本步伐，培养球感和节奏感',
+        },
       };
-    }
+    },
   },
-  
+
   // 运球专注模板 - 适合需要提高运球技能的用户
   [TEMPLATE_TYPES.DRIBBLING_FOCUS]: {
     name: '运球专项训练计划',
@@ -88,36 +86,36 @@ const trainingTemplates = {
     recommendedDuration: 20,
     difficultyLevel: 2,
     focusAreas: ['dribbling'],
-    getTrainings: (level) => {
+    getTrainings: level => {
       return {
         // 周一 - 基础运球
         1: {
           trainings: [
             dribblingTrainings.find(t => t.moduleId === 'dribbling_1'),
-            dribblingTrainings.find(t => t.moduleId === 'dribbling_2')
+            dribblingTrainings.find(t => t.moduleId === 'dribbling_2'),
           ],
           title: '运球基础强化',
-          description: '通过多种基础运球训练提高控球稳定性'
+          description: '通过多种基础运球训练提高控球稳定性',
         },
         // 周三 - 变向运球
         3: {
           trainings: [dribblingTrainings.find(t => t.moduleId === 'dribbling_3')],
           title: '变向运球专项',
-          description: '学习基本变向技巧，提高控球灵活性'
+          description: '学习基本变向技巧，提高控球灵活性',
         },
         // 周五 - 运球组合
         5: {
           trainings: [
             dribblingTrainings.find(t => t.moduleId === 'dribbling_2'),
-            dribblingTrainings.find(t => t.moduleId === 'dribbling_3')
+            dribblingTrainings.find(t => t.moduleId === 'dribbling_3'),
           ],
           title: '运球技能组合',
-          description: '练习不同运球技巧的组合应用'
-        }
+          description: '练习不同运球技巧的组合应用',
+        },
       };
-    }
+    },
   },
-  
+
   // 投篮专注模板 - 适合需要提高投篮技能的用户
   [TEMPLATE_TYPES.SHOOTING_FOCUS]: {
     name: '投篮专项训练计划',
@@ -126,33 +124,33 @@ const trainingTemplates = {
     recommendedDuration: 20,
     difficultyLevel: 2,
     focusAreas: ['shooting'],
-    getTrainings: (level) => {
+    getTrainings: level => {
       return {
         // 周二 - 基础投篮
         2: {
           trainings: [shootingTrainings.find(t => t.moduleId === 'shooting_1')],
           title: '投篮基础训练',
-          description: '学习正确的投篮姿势和手型'
+          description: '学习正确的投篮姿势和手型',
         },
         // 周四 - 中距离投篮
         4: {
           trainings: [shootingTrainings.find(t => t.moduleId === 'shooting_2')],
           title: '中距离投篮训练',
-          description: '练习中距离投篮技巧，提高准确性'
+          description: '练习中距离投篮技巧，提高准确性',
         },
         // 周六 - 组合投篮
         6: {
           trainings: [
             shootingTrainings.find(t => t.moduleId === 'shooting_1'),
-            shootingTrainings.find(t => t.moduleId === 'shooting_2')
+            shootingTrainings.find(t => t.moduleId === 'shooting_2'),
           ],
           title: '组合投篮训练',
-          description: '综合练习不同距离的投篮技巧'
-        }
+          description: '综合练习不同距离的投篮技巧',
+        },
       };
-    }
+    },
   },
-  
+
   // 父子互动专注模板 - 适合需要加强父子互动的用户
   [TEMPLATE_TYPES.PARENT_CHILD]: {
     name: '父子互动训练计划',
@@ -161,30 +159,30 @@ const trainingTemplates = {
     recommendedDuration: 25,
     difficultyLevel: 1,
     focusAreas: ['parent_child'],
-    getTrainings: (level) => {
+    getTrainings: level => {
       return {
         // 周三 - 控球与协调
         3: {
           trainings: [parentChildTrainings.find(t => t.moduleId === 'parent_child_day1')],
           title: '父子互动 - 控球与协调',
-          description: '父子共同完成的控球训练，增进互动的同时提高球感'
+          description: '父子共同完成的控球训练，增进互动的同时提高球感',
         },
         // 周六 - 控球专项与抢球
         6: {
           trainings: [parentChildTrainings.find(t => t.moduleId === 'parent_child_day2')],
           title: '父子互动 - 控球与抢断',
-          description: '通过趣味性的抢球游戏提高控球能力和反应速度'
+          description: '通过趣味性的抢球游戏提高控球能力和反应速度',
         },
         // 周日 - 上篮专项
         0: {
           trainings: [parentChildTrainings.find(t => t.moduleId === 'parent_child_day3')],
           title: '父子互动 - 上篮训练',
-          description: '学习基本上篮技巧，配合父亲辅助完成'
-        }
+          description: '学习基本上篮技巧，配合父亲辅助完成',
+        },
       };
-    }
+    },
   },
-  
+
   // 平衡全面模板 - 适合需要全面提高的用户
   [TEMPLATE_TYPES.BALANCED]: {
     name: '平衡全面训练计划',
@@ -193,36 +191,36 @@ const trainingTemplates = {
     recommendedDuration: 25,
     difficultyLevel: 3,
     focusAreas: ['dribbling', 'shooting', 'passing', 'movement'],
-    getTrainings: (level) => {
+    getTrainings: level => {
       return {
         // 周一 - 运球训练
         1: {
           trainings: [dribblingTrainings.find(t => t.moduleId === 'dribbling_3')],
           title: '运球技能训练',
-          description: '提高运球能力和控球技巧'
+          description: '提高运球能力和控球技巧',
         },
         // 周三 - 投篮训练
         3: {
           trainings: [shootingTrainings.find(t => t.moduleId === 'shooting_2')],
           title: '投篮技能训练',
-          description: '提高投篮准确度和稳定性'
+          description: '提高投篮准确度和稳定性',
         },
         // 周五 - 传球训练
         5: {
           trainings: [passingTrainings.find(t => t.moduleId === 'passing_1')],
           title: '传球技能训练',
-          description: '学习基本传球技巧，提高传球准确性'
+          description: '学习基本传球技巧，提高传球准确性',
         },
         // 周六 - 移动训练
         6: {
           trainings: [movementTrainings.find(t => t.moduleId === 'movement_1')],
           title: '移动技能训练',
-          description: '提高移动速度和灵活性，学习防守脚步'
-        }
+          description: '提高移动速度和灵活性，学习防守脚步',
+        },
       };
-    }
+    },
   },
-  
+
   // 快速训练模板 - 适合时间有限的用户
   [TEMPLATE_TYPES.QUICK]: {
     name: '快速训练计划',
@@ -231,59 +229,59 @@ const trainingTemplates = {
     recommendedDuration: 10,
     difficultyLevel: 2,
     focusAreas: ['dribbling', 'shooting'],
-    getTrainings: (level) => {
+    getTrainings: level => {
       // 为每天创建一个快速训练
       const trainings = {};
-      
+
       // 周一到周五的快速训练
       for (let i = 1; i <= 5; i++) {
         let trainingContent;
-        
+
         // 基于周几分配不同的训练内容
         switch (i) {
           case 1: // 周一 - 运球快速训练
             trainingContent = {
               trainings: [dribblingTrainings.find(t => t.moduleId === 'dribbling_1')],
               title: '运球快速训练',
-              description: '10分钟运球技能强化'
+              description: '10分钟运球技能强化',
             };
             break;
           case 2: // 周二 - 投篮快速训练
             trainingContent = {
               trainings: [shootingTrainings.find(t => t.moduleId === 'shooting_1')],
               title: '投篮快速训练',
-              description: '10分钟投篮技能强化'
+              description: '10分钟投篮技能强化',
             };
             break;
           case 3: // 周三 - 变向运球快速训练
             trainingContent = {
               trainings: [dribblingTrainings.find(t => t.moduleId === 'dribbling_3')],
               title: '变向运球快速训练',
-              description: '10分钟变向运球技能强化'
+              description: '10分钟变向运球技能强化',
             };
             break;
           case 4: // 周四 - 中距离投篮快速训练
             trainingContent = {
               trainings: [shootingTrainings.find(t => t.moduleId === 'shooting_2')],
               title: '中距离投篮快速训练',
-              description: '10分钟中距离投篮技能强化'
+              description: '10分钟中距离投篮技能强化',
             };
             break;
           case 5: // 周五 - 综合技能快速训练
             trainingContent = {
               trainings: [dribblingTrainings.find(t => t.moduleId === 'dribbling_2')],
               title: '综合技能快速训练',
-              description: '10分钟综合技能强化'
+              description: '10分钟综合技能强化',
             };
             break;
         }
-        
+
         trainings[i] = trainingContent;
       }
-      
+
       return trainings;
-    }
-  }
+    },
+  },
 };
 
 /**
@@ -302,24 +300,24 @@ const trainingTemplates = {
 export const recommendTrainingTemplate = (userProfile, preferences) => {
   // 默认模板：平衡全面
   let recommendedTemplate = TEMPLATE_TYPES.BALANCED;
-  
+
   // 基于等级的推荐
   if (userProfile.level <= 2) {
     recommendedTemplate = TEMPLATE_TYPES.BEGINNER;
   }
-  
+
   // 基于技能水平的推荐 - 找出最弱的技能
   const skillLevels = userProfile.skillLevels || {};
   let weakestSkill = null;
   let lowestLevel = Infinity;
-  
+
   Object.entries(skillLevels).forEach(([skill, level]) => {
     if (level < lowestLevel) {
       lowestLevel = level;
       weakestSkill = skill;
     }
   });
-  
+
   // 基于最弱技能推荐专项训练
   if (weakestSkill) {
     switch (weakestSkill) {
@@ -337,7 +335,7 @@ export const recommendTrainingTemplate = (userProfile, preferences) => {
         break;
     }
   }
-  
+
   // 考虑用户的偏好设置
   if (preferences) {
     // 基于偏好的焦点区域
@@ -346,7 +344,7 @@ export const recommendTrainingTemplate = (userProfile, preferences) => {
         recommendedTemplate = TEMPLATE_TYPES.PARENT_CHILD;
       }
     }
-    
+
     // 基于时间偏好
     if (preferences.frequency && preferences.duration) {
       // 时间有限但频率高的用户适合快速训练
@@ -355,7 +353,7 @@ export const recommendTrainingTemplate = (userProfile, preferences) => {
       }
     }
   }
-  
+
   return recommendedTemplate;
 };
 
@@ -367,38 +365,43 @@ export const recommendTrainingTemplate = (userProfile, preferences) => {
  * @param {number} daysToSchedule - 计划天数(默认14天)
  * @returns {Object} 生成的训练计划
  */
-export const generateTrainingPlan = (templateType, userProfile, preferences = {}, daysToSchedule = 14) => {
+export const generateTrainingPlan = (
+  templateType,
+  userProfile,
+  preferences = {},
+  daysToSchedule = 14
+) => {
   // 获取模板
   const template = trainingTemplates[templateType] || trainingTemplates[TEMPLATE_TYPES.BALANCED];
-  
+
   // 确定训练频率和时长
   const frequency = preferences.frequency || template.recommendedFrequency;
   const duration = preferences.duration || template.recommendedDuration;
-  
+
   // 获取模板的训练内容配置
   const templateTrainings = template.getTrainings(userProfile.level);
-  
+
   // 创建从今天开始的日期数组
   const today = new Date();
   const scheduleDates = [];
-  
+
   for (let i = 0; i < daysToSchedule; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     scheduleDates.push(date);
   }
-  
+
   // 根据训练频率筛选合适的训练日期
   const trainingDates = scheduleDates.filter(date => {
     const dayOfWeek = date.getDay(); // 0-6, 0是周日
-    
+
     // 检查这一天是否有训练内容
     return templateTrainings[dayOfWeek] !== undefined;
   });
-  
+
   // 如果计划的训练日数量超过了频率，则进行裁剪
   const adjustedTrainingDates = trainingDates.slice(0, frequency);
-  
+
   // 生成最终的训练计划
   const generatedPlan = {
     name: template.name,
@@ -406,14 +409,14 @@ export const generateTrainingPlan = (templateType, userProfile, preferences = {}
     level: userProfile.level,
     frequency,
     duration,
-    trainingDays: []
+    trainingDays: [],
   };
-  
+
   // 为每个训练日创建详细内容
   adjustedTrainingDates.forEach((date, index) => {
     const dayOfWeek = date.getDay();
     const templateDay = templateTrainings[dayOfWeek];
-    
+
     if (templateDay) {
       // 创建训练日对象
       const trainingDay = {
@@ -429,13 +432,13 @@ export const generateTrainingPlan = (templateType, userProfile, preferences = {}
         isCustom: true,
         levelId: userProfile.level,
         weekId: 1,
-        dayId: index + 1
+        dayId: index + 1,
       };
-      
+
       generatedPlan.trainingDays.push(trainingDay);
     }
   });
-  
+
   return generatedPlan;
 };
 
@@ -451,7 +454,7 @@ export const generateFocusedTraining = (focus, duration, level) => {
   let availableTrainings = [];
   let title = '';
   let description = '';
-  
+
   switch (focus) {
     case 'dribbling':
       availableTrainings = dribblingTrainings;
@@ -484,12 +487,12 @@ export const generateFocusedTraining = (focus, duration, level) => {
         ...dribblingTrainings,
         ...shootingTrainings,
         ...passingTrainings,
-        ...movementTrainings
+        ...movementTrainings,
       ];
       title = '综合能力训练';
       description = '全面提升各项篮球技能';
   }
-  
+
   // 根据等级筛选适合的训练
   if (level <= 3) {
     // 低等级只用基础训练
@@ -498,32 +501,27 @@ export const generateFocusedTraining = (focus, duration, level) => {
     // 中等级可以用基础和中级训练
     availableTrainings = availableTrainings.filter(t => t.level === '基础' || t.level === '中级');
   }
-  
+
   // 根据时长选择合适数量的训练
-  const count = Math.max(1, Math.floor(duration / 15));  // 每个训练大约15分钟
-  
+  const count = Math.max(1, Math.floor(duration / 15)); // 每个训练大约15分钟
+
   // 随机选择训练
   const shuffled = [...availableTrainings].sort(() => 0.5 - Math.random());
   const selectedTrainings = shuffled.slice(0, count);
-  
+
   // 计算实际时长
   const actualDuration = selectedTrainings.reduce((total, t) => total + (t.duration || 0), 0);
-  
+
   return {
     title: `${title} (${duration}分钟)`,
     description,
     trainings: selectedTrainings,
     duration: actualDuration,
-    starReward: Math.ceil(duration / 5)  // 每5分钟1星
+    starReward: Math.ceil(duration / 5), // 每5分钟1星
   };
 };
 
-export {
-  TEMPLATE_TYPES,
-  FREQUENCY_OPTIONS,
-  DURATION_OPTIONS,
-  trainingTemplates
-};
+export { TEMPLATE_TYPES, FREQUENCY_OPTIONS, DURATION_OPTIONS, trainingTemplates };
 
 export default {
   recommendTrainingTemplate,
@@ -531,5 +529,5 @@ export default {
   generateFocusedTraining,
   TEMPLATE_TYPES,
   FREQUENCY_OPTIONS,
-  DURATION_OPTIONS
+  DURATION_OPTIONS,
 };

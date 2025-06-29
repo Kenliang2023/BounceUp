@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 
 const PinProtection = ({ onAuthenticate }) => {
   const [pin, setPin] = useState('');
@@ -12,19 +12,19 @@ const PinProtection = ({ onAuthenticate }) => {
     // 从localStorage获取PIN码
     const savedPin = localStorage.getItem('bounceup_pin');
     setStoredPin(savedPin);
-    
+
     // 如果没有设置PIN码，进入设置模式
     if (!savedPin) {
       setIsSettingPin(true);
     }
-    
+
     // 自动聚焦输入框
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, []);
 
-  const handlePinChange = (e) => {
+  const handlePinChange = e => {
     const value = e.target.value;
     // 只允许数字，最多6位
     if (/^\d{0,6}$/.test(value)) {
@@ -33,7 +33,7 @@ const PinProtection = ({ onAuthenticate }) => {
     }
   };
 
-  const handleConfirmPinChange = (e) => {
+  const handleConfirmPinChange = e => {
     const value = e.target.value;
     // 只允许数字，最多6位
     if (/^\d{0,6}$/.test(value)) {
@@ -42,21 +42,21 @@ const PinProtection = ({ onAuthenticate }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
-    
+
     if (isSettingPin) {
       // 设置新PIN码
       if (pin.length < 4) {
         setError('PIN码至少需要4位数字');
         return;
       }
-      
+
       if (pin !== confirmPin) {
         setError('两次输入的PIN码不一致');
         return;
       }
-      
+
       localStorage.setItem('bounceup_pin', pin);
       onAuthenticate();
     } else {
@@ -98,11 +98,9 @@ const PinProtection = ({ onAuthenticate }) => {
                   autoComplete="new-password"
                 />
               </div>
-              
+
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  确认PIN码
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">确认PIN码</label>
                 <input
                   type="password"
                   value={confirmPin}
@@ -116,9 +114,7 @@ const PinProtection = ({ onAuthenticate }) => {
             </>
           ) : (
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                PIN码
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">PIN码</label>
               <input
                 ref={inputRef}
                 type="password"
@@ -138,10 +134,7 @@ const PinProtection = ({ onAuthenticate }) => {
             </div>
           )}
 
-          <button
-            type="submit"
-            className="w-full btn btn-primary py-3"
-          >
+          <button type="submit" className="w-full btn btn-primary py-3">
             {isSettingPin ? '保存PIN码' : '解锁应用'}
           </button>
         </form>
@@ -150,4 +143,4 @@ const PinProtection = ({ onAuthenticate }) => {
   );
 };
 
-export default PinProtection; 
+export default PinProtection;

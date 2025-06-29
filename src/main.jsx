@@ -1,18 +1,19 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './styles/globals.css'
-import { checkForAppUpdate } from './utils/versionCheck.js'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.jsx';
+import './styles/globals.css';
+import { checkForAppUpdate } from './utils/versionCheck.js';
 
 // 注册Service Worker
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then((registration) => {
+  navigator.serviceWorker
+    .register('/sw.js')
+    .then(registration => {
       console.log('Service Worker registered with scope:', registration.scope);
       // 每次加载时检查更新
       checkForAppUpdate();
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Service Worker registration failed:', error);
     });
 }
@@ -28,5 +29,5 @@ window.addEventListener('load', () => {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>,
-) 
+  </React.StrictMode>
+);

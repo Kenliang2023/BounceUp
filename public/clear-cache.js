@@ -44,11 +44,11 @@ function clearLocalStorage() {
     const bounceup_authenticated = sessionStorage.getItem('bounceup_authenticated');
     const bounceup_pin = localStorage.getItem('bounceup_pin');
     const bounceup_user = localStorage.getItem('bounceup_user');
-    
+
     // 清除所有存储
     localStorage.clear();
     sessionStorage.clear();
-    
+
     // 恢复登录信息
     if (bounceup_authenticated) {
       sessionStorage.setItem('bounceup_authenticated', bounceup_authenticated);
@@ -59,7 +59,7 @@ function clearLocalStorage() {
     if (bounceup_user) {
       localStorage.setItem('bounceup_user', bounceup_user);
     }
-    
+
     console.log('本地存储已清除 (保留登录信息)');
   } catch (err) {
     console.error('清除本地存储错误:', err);
@@ -101,25 +101,25 @@ async function performCleanup() {
       }
     </style>
   `;
-  
+
   const messageElement = document.getElementById('message');
-  
+
   try {
     // 清除缓存
     messageElement.textContent = '正在清除浏览器缓存...';
     await clearAllCaches();
-    
+
     // 注销Service Worker
     messageElement.textContent = '正在重置Service Worker...';
     await unregisterServiceWorkers();
-    
+
     // 清除除登录外的本地存储
     messageElement.textContent = '正在清除应用数据...';
     clearLocalStorage();
-    
+
     // 完成
     messageElement.textContent = '清理完成，即将刷新应用...';
-    
+
     // 延迟2秒后刷新
     setTimeout(() => {
       window.location.href = '/';
@@ -127,7 +127,7 @@ async function performCleanup() {
   } catch (error) {
     messageElement.textContent = `清理过程中出错: ${error.message}`;
     console.error('清理过程中出错:', error);
-    
+
     // 添加重试按钮
     const retryButton = document.createElement('button');
     retryButton.textContent = '重试';
@@ -142,7 +142,7 @@ async function performCleanup() {
     `;
     retryButton.onclick = () => window.location.reload();
     document.body.appendChild(retryButton);
-    
+
     // 添加返回按钮
     const backButton = document.createElement('button');
     backButton.textContent = '返回应用';
@@ -156,7 +156,7 @@ async function performCleanup() {
       border-radius: 4px;
       cursor: pointer;
     `;
-    backButton.onclick = () => window.location.href = '/';
+    backButton.onclick = () => (window.location.href = '/');
     document.body.appendChild(backButton);
   }
 }
