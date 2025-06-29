@@ -60,3 +60,20 @@ sw.js.map
 
 # TypeScript
 *.tsbuildinfo
+
+# Development build
+dev-dist/
+
+# Demo and test files
+demo-*.html
+*-demo.html
+audio-demo/
+deploy-audio/
+test-audio.html
+
+# Archive files
+*.tar.gz
+*.zip
+
+# Claude AI
+.claude/
