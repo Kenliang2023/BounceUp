@@ -3,18 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 
 const SettingsPage = () => {
-  const { user, updateProfile, updatePreferences } = useUser();
+  const { user, updateUser, updatePreferences } = useUser();
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
   const [age, setAge] = useState(8);
   const [favoriteColor, setFavoriteColor] = useState('blue');
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [currentPin, setCurrentPin] = useState('');
   const [pinError, setPinError] = useState('');
   const [profileSaved, setProfileSaved] = useState(false);
   const [pinSaved, setPinSaved] = useState(false);
+  const [soundSettingSaved, setSoundSettingSaved] = useState(false);
 
   useEffect(() => {
     // 初始化表单数据
@@ -22,13 +24,15 @@ const SettingsPage = () => {
       setName(user.name || '');
       setAge(user.age || 8);
       setFavoriteColor(user.preferences?.favoriteColor || 'blue');
+      setSoundEnabled(user.preferences?.soundEnabled !== false);
     }
   }, [user]);
 
   const handleProfileSubmit = e => {
     e.preventDefault();
 
-    updateProfile({
+    updateUser({
+      ...user,
       name,
       age,
     });
@@ -42,6 +46,22 @@ const SettingsPage = () => {
     // 3秒后隐藏成功提示
     setTimeout(() => {
       setProfileSaved(false);
+    }, 3000);
+  };
+
+  const handleSoundToggle = () => {
+    const newSoundEnabled = !soundEnabled;
+    setSoundEnabled(newSoundEnabled);
+
+    updatePreferences({
+      soundEnabled: newSoundEnabled,
+    });
+
+    setSoundSettingSaved(true);
+
+    // 3秒后隐藏成功提示
+    setTimeout(() => {
+      setSoundSettingSaved(false);
     }, 3000);
   };
 
@@ -166,6 +186,35 @@ const SettingsPage = () => {
         </form>
       </div>
 
+      {/* 音频设置 */}
+      <div className="card">
+        <h2 className="text-xl font-semibold mb-4">音频设置</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="font-medium">训练语音提示</p>
+            <p className="text-sm text-gray-600">开启后在训练过程中会播放语音指导</p>
+          </div>
+          <button
+            onClick={handleSoundToggle}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              soundEnabled ? 'bg-primary' : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                soundEnabled ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+
+        {soundSettingSaved && (
+          <div className="p-2 bg-green-100 text-green-700 rounded text-sm text-center">
+            音频设置已保存！
+          </div>
+        )}
+      </div>
+
       {/* PIN码设置 */}
       <div className="card">
         <h2 className="text-xl font-semibold mb-4">安全设置</h2>
@@ -244,7 +293,7 @@ const SettingsPage = () => {
       {/* 关于 */}
       <div className="card">
         <h2 className="text-xl font-semibold mb-2">关于 BounceUp</h2>
-        <p className="text-sm text-gray-600 mb-1">版本：0.1.0</p>
+        <p className="text-sm text-gray-600 mb-1">版本：1.0.0</p>
         <p className="text-sm text-gray-600">
           BounceUp 是一款专为儿童设计的篮球训练助手应用，旨在通过科学、有趣的方式提升篮球技能。
         </p>

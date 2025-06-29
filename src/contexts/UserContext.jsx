@@ -12,6 +12,7 @@ const defaultUser = {
   level: { level: 1, name: '新手球员', minStars: 0 },
   preferences: {
     theme: 'light',
+    soundEnabled: true, // 默认开启音频
   },
 };
 
@@ -60,6 +61,7 @@ export const UserProvider = ({ children }) => {
         level: { level: 2, name: '初级球员', minStars: 20 },
         preferences: {
           theme: 'light',
+          soundEnabled: true,
         },
       };
 

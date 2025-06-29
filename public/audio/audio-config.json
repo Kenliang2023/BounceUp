@@ -1,0 +1,40 @@
+{
+  "audioFiles": {
+    "welcome": {
+      "file": "welcome.mp3",
+      "text": "小朋友你好！欢迎来到篮球训练营，让我们一起开始今天的训练吧！",
+      "voice": "cute_boy",
+      "usage": "应用启动或用户登录时播放"
+    },
+    "dribbling_start": {
+      "file": "dribbling_start.mp3",
+      "text": "现在开始运球训练！记住要用手指控球，不是手掌哦。准备好了吗？3、2、1，开始！",
+      "voice": "audiobook_female_1",
+      "usage": "运球训练开始时播放"
+    },
+    "encouragement": {
+      "file": "encouragement.mp3",
+      "text": "做得真棒！继续保持，你是最棒的小球员！",
+      "voice": "Charming_Lady",
+      "usage": "训练过程中的鼓励，可在完成动作或得分时播放"
+    },
+    "shooting_tips": {
+      "file": "shooting_tips.mp3",
+      "text": "投篮时记得手肘要对准篮筐，手腕轻轻一抖，球就会飞进篮筐啦！",
+      "voice": "cute_boy",
+      "usage": "投篮训练开始前的技巧提示"
+    },
+    "rest_reminder": {
+      "file": "rest_reminder.mp3",
+      "text": "训练辛苦了！休息一下，喝点水，我们马上继续。",
+      "voice": "audiobook_female_1",
+      "usage": "训练中途休息时播放"
+    },
+    "training_complete": {
+      "file": "training_complete.mp3",
+      "text": "今天的训练完成了！你表现得非常出色，明天继续加油哦！",
+      "voice": "Charming_Lady",
+      "usage": "完成所有训练后播放"
+    }
+  }
+}

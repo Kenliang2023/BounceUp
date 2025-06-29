@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTraining } from '../contexts/TrainingContext';
 import { findTrainingById } from '../data/allTrainings';
 import CountdownTimer from '../components/training/CountdownTimer';
+import audioManager from '../utils/audioManager';
 
 const TrainingPage = () => {
   const { id } = useParams();
@@ -21,6 +22,16 @@ const TrainingPage = () => {
   const [showTimerAlert, setShowTimerAlert] = useState(false);
   const [timerMessage, setTimerMessage] = useState('');
   const [isCountdownActive, setIsCountdownActive] = useState(false);
+
+  // 预加载音频资源
+  useEffect(() => {
+    audioManager.preloadAllTrainingAudio();
+
+    // 组件卸载时停止所有音频
+    return () => {
+      audioManager.stop();
+    };
+  }, []);
 
   // 获取训练数据
   useEffect(() => {
@@ -58,6 +69,16 @@ const TrainingPage = () => {
       setIsTrainingActive(true);
       setCurrentStep(0);
       setIsCountdownActive(true);
+
+      // 播放开始训练的音频
+      if (training.category === 'dribbling') {
+        audioManager.play('dribbling_start');
+      } else if (training.category === 'shooting') {
+        // 投篮训练先播放技巧提示
+        audioManager.play('shooting_tips');
+      } else {
+        audioManager.play('welcome');
+      }
     } catch (error) {
       console.error('开始训练失败:', error);
       setError(`开始训练失败: ${error.message}`);
@@ -71,6 +92,8 @@ const TrainingPage = () => {
 
     if (currentStep < training.steps.length - 1) {
       setCurrentStep(prevStep => prevStep + 1);
+      // 播放鼓励音频
+      audioManager.play('encouragement');
       // 切换到下一步骤后重新激活计时器
       setTimeout(() => setIsCountdownActive(true), 100);
     } else {
@@ -97,6 +120,11 @@ const TrainingPage = () => {
     setTimerMessage(`还剩 ${minutesLeft} 分钟`);
     setShowTimerAlert(true);
 
+    // 如果只剩1分钟，播放休息提醒
+    if (minutesLeft === 1) {
+      audioManager.play('rest_reminder');
+    }
+
     // 2秒后自动隐藏提示
     setTimeout(() => {
       setShowTimerAlert(false);
@@ -120,6 +148,9 @@ const TrainingPage = () => {
       setIsTrainingActive(false);
       setCurrentStep(0);
       setShowCompletionModal(false);
+
+      // 播放训练完成音频
+      audioManager.play('training_complete');
 
       // 跳转到进度页面
       setTimeout(() => {
